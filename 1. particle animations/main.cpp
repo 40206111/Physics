@@ -157,7 +157,7 @@ int initRender() {
 
 	// Set the required callback functions
 	glfwSetKeyCallback(window, KeyCallback);
-	//glfwSetCursorPosCallback(window, MouseCallback);
+	glfwSetCursorPosCallback(window, MouseCallback);
 	glfwSetScrollCallback(window, ScrollCallback);
 
 	// remove the mouse cursor
@@ -228,10 +228,11 @@ int main()
 	/*
 	CREATE THE PARTICLE(S) YOU NEED TO COMPLETE THE TASKS HERE
 	*/
+	
 
 	glm::vec3 a = glm::vec3(0.0f, -9.8f, 0.0f);
 	glm::vec3 r0 = glm::vec3(0.0f, 2.0f, 0.0);
-	glm::vec3 u = glm::vec3(0.0f, 10.0f, 2.0f);
+	glm::vec3 u = glm::vec3(1.0f, 10.0f, 2.0f);
 	glm::vec3 drag = glm::vec3(0.0f, 1.0f, 0.0f);
 
 
@@ -281,7 +282,8 @@ int main()
 		// 5 - add collision with plane
 		if (particle1.getTranslate()[3][1] <= plane.getTranslate()[3][1])
 		{
-			r0 = plane.getTranslate()[3];
+			r0 = particle1.getTranslate()[3];
+			r0.y = plane.getTranslate()[3][1];
 			u = u + a*currentFrame;
 			u.y = -u.y - drag.y;
 			firstFrame = (GLfloat)glfwGetTime();
