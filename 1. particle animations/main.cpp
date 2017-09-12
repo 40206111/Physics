@@ -261,14 +261,14 @@ int main()
 		//particle1.translate(glm::vec3(0.0f, -1.0f * deltaTime * acc, 0.0f));
 
 		// 1 - make particle fall at constant speed using the translate method
-
+		//particle1.translate(glm::vec3(0.0f, -deltaTime, 0.0f));
 
 		// 2 - same as above using the setPos method
-		
+		//particle1.setPos(glm::vec3(0.0f, -currentFrame, 0.0f));
 
 		// 3 - make particle oscillate above the ground plance
+		particle1.setPos(glm::vec3(0.0f, sin(-currentFrame)+1, 0.0f));
 		
-
 		// 4 - particle animation from initial velocity and acceleration
 		
 
