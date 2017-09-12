@@ -6,6 +6,7 @@
 // Std. Includes
 #include <string>
 #include <time.h>
+#include <stdio.h>
 
 // GLEW
 #define GLEW_STATIC
@@ -213,7 +214,7 @@ int main()
 	// create ground plane
 	Mesh plane = Mesh::Mesh();
 	// scale it up x5
-	plane.scale(glm::vec3(5.0f, 5.0f, 5.0f));
+	plane.scale(glm::vec3(100.0f, 100.0f, 100.0f));
 
 	// create particle
 	Mesh particle1 = Mesh::Mesh();
@@ -229,8 +230,9 @@ int main()
 	*/
 
 	glm::vec3 a = glm::vec3(0.0f, -9.8f, 0.0f);
-	glm::vec3 r0 = glm::vec3(0.0f, 10.0f, 0.0);
-	glm::vec3 u = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 r0 = glm::vec3(0.0f, 2.0f, 0.0);
+	glm::vec3 u = glm::vec3(0.0f, 10.0f, 2.0f);
+	glm::vec3 drag = glm::vec3(0.0f, 1.0f, 0.0f);
 
 
 	GLfloat firstFrame = (GLfloat) glfwGetTime();
@@ -277,7 +279,13 @@ int main()
 		particle1.setPos(pos);
 
 		// 5 - add collision with plane
-
+		if (particle1.getTranslate()[3][1] <= plane.getTranslate()[3][1])
+		{
+			r0 = plane.getTranslate()[3];
+			u = u + a*currentFrame;
+			u.y = -u.y - drag.y;
+			firstFrame = (GLfloat)glfwGetTime();
+		}
 
 		// 6 - Same as above but for a collection of particles
 		
