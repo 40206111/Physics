@@ -156,7 +156,7 @@ int initRender() {
 
 	// Set the required callback functions
 	glfwSetKeyCallback(window, KeyCallback);
-	glfwSetCursorPosCallback(window, MouseCallback);
+	//glfwSetCursorPosCallback(window, MouseCallback);
 	glfwSetScrollCallback(window, ScrollCallback);
 
 	// remove the mouse cursor
@@ -257,8 +257,8 @@ int main()
 		/*
 		**	ANIMATIONS
 		*/
-		acc *=1.1;
-		particle1.translate(glm::vec3(0.0f, -1.0f * deltaTime * acc, 0.0f));
+		//acc *=1.1;
+		//particle1.translate(glm::vec3(0.0f, -1.0f * deltaTime * acc, 0.0f));
 
 		// 1 - make particle fall at constant speed using the translate method
 
