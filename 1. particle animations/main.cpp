@@ -227,11 +227,14 @@ int main()
 	/*
 	CREATE THE PARTICLE(S) YOU NEED TO COMPLETE THE TASKS HERE
 	*/
-	
+
+	glm::vec3 a = glm::vec3(0.0f, -9.8f, 0.0f);
+	glm::vec3 r0 = glm::vec3(0.0f, 10.0f, 0.0);
+	glm::vec3 u = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
 	GLfloat firstFrame = (GLfloat) glfwGetTime();
-	float acc = 1.1f;
+	//float acc = 1.1f;
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -267,10 +270,11 @@ int main()
 		//particle1.setPos(glm::vec3(0.0f, -currentFrame, 0.0f));
 
 		// 3 - make particle oscillate above the ground plance
-		particle1.setPos(glm::vec3(0.0f, sin(-currentFrame)+1, 0.0f));
+		//particle1.setPos(glm::vec3(0.0f, sin(-currentFrame)+1, 0.0f));
 		
 		// 4 - particle animation from initial velocity and acceleration
-		
+		glm::vec3 pos = r0 + u * currentFrame + 0.5*a*currentFrame*currentFrame;
+		particle1.setPos(pos);
 
 		// 5 - add collision with plane
 
