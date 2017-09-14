@@ -217,36 +217,57 @@ int main()
 	plane.scale(glm::vec3(100.0f, 100.0f, 100.0f));
 
 	// create particle
-	Mesh particle1 = Mesh::Mesh();
-	//scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
-	particle1.translate(glm::vec3(0.0f, 2.5f, 0.0f));
-	particle1.scale(glm::vec3(.1f, .1f, .1f));
-	particle1.rotate((GLfloat) M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+	//Mesh particle1 = Mesh::Mesh();
+	////scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
+	//particle1.translate(glm::vec3(0.0f, 2.5f, 0.0f));
+	//particle1.scale(glm::vec3(.1f, .1f, .1f));
+	//particle1.rotate((GLfloat) M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
 	// allocate shader
-	particle1.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+	//particle1.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
 
 	/*
 	CREATE THE PARTICLE(S) YOU NEED TO COMPLETE THE TASKS HERE
 	*/
-	
+
+	int amount = 3530;
+	Mesh meshes[3530];
 
 	glm::vec3 a = glm::vec3(0.0f, -9.8f, 0.0f);
-	glm::vec3 r0 = glm::vec3(0.0f, 2.0f, 0.0);
-	glm::vec3 u = glm::vec3(1.0f, 10.0f, 2.0f);
 	glm::vec3 drag = glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::vec3 r0[3530];
+	glm::vec3 u[3530];
+	std::default_random_engine generatot;
+	std::uniform_real_distribution<float> place(-20.0f, 10.0f);
+	std::uniform_real_distribution<float> vel(0.0f, 10.0f);
+	GLfloat firstFrame[3530];
 
+	for (int i=0; i < amount; i++)
+	{
+		meshes[i] = Mesh::Mesh();
+		meshes[i].translate(glm::vec3(0.0f, 2.5f, 0.0f));
+		meshes[i].scale(glm::vec3(.1f, .1f, .1f));
+		meshes[i].rotate((GLfloat)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+		r0[i] = glm::vec3(place(generatot), place(generatot), place(generatot));
+		u[i] = glm::vec3(vel(generatot), vel(generatot), vel(generatot));
+		meshes[i].setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+		firstFrame[i] = (GLfloat)glfwGetTime();
+	}
 
-	GLfloat firstFrame = (GLfloat) glfwGetTime();
 	//float acc = 1.1f;
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
 		// Set frame time
-		GLfloat currentFrame = (GLfloat)  glfwGetTime() - firstFrame;
-		// the animation can be sped up or slowed down by multiplying currentFrame by a factor.
-		currentFrame *= 1.5f;
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		GLfloat currentFrame[3530];
+		for (int i = 0; i < amount; i++)
+		{
+			currentFrame[i] = (GLfloat)glfwGetTime() - firstFrame[i];
+
+			// the animation can be sped up or slowed down by multiplying currentFrame by a factor.
+			currentFrame[i] *= 1.5f;
+			deltaTime = currentFrame[i] - lastFrame;
+			lastFrame = currentFrame[i];
+		}
 
 		/*
 		**	INTERACTION
@@ -268,7 +289,7 @@ int main()
 
 		// 1 - make particle fall at constant speed using the translate method
 		//particle1.translate(glm::vec3(0.0f, -deltaTime, 0.0f));
-
+		
 		// 2 - same as above using the setPos method
 		//particle1.setPos(glm::vec3(0.0f, -currentFrame, 0.0f));
 
@@ -276,21 +297,34 @@ int main()
 		//particle1.setPos(glm::vec3(0.0f, sin(-currentFrame)+1, 0.0f));
 		
 		// 4 - particle animation from initial velocity and acceleration
-		glm::vec3 pos = r0 + u * currentFrame + 0.5*a*currentFrame*currentFrame;
-		particle1.setPos(pos);
+		//glm::vec3 pos = r0 + u * currentFrame + 0.5*a*currentFrame*currentFrame;
+		//particle1.setPos(pos);
 
-		// 5 - add collision with plane
-		if (particle1.getTranslate()[3][1] <= plane.getTranslate()[3][1])
-		{
-			r0 = particle1.getTranslate()[3];
-			r0.y = plane.getTranslate()[3][1];
-			u = u + a*currentFrame;
-			u.y = -u.y - drag.y;
-			firstFrame = (GLfloat)glfwGetTime();
-		}
+		//// 5 - add collision with plane
+		//if (particle1.getTranslate()[3][1] <= plane.getTranslate()[3][1])
+		//{
+		//	r0 = particle1.getTranslate()[3];
+		//	r0.y = plane.getTranslate()[3][1];
+		//	u = u + a*currentFrame;
+		//	u.y = -u.y - drag.y;
+		//	firstFrame = (GLfloat)glfwGetTime();
+		//}
 
 		// 6 - Same as above but for a collection of particles
-		
+		for (int i = 0; i < amount; i++)
+		{
+			glm::vec3 pos = r0[i] + u[i] * currentFrame[i] + 0.5*a*currentFrame[i]*currentFrame[i];
+			meshes[i].setPos(pos);
+
+			if (meshes[i].getTranslate()[3][1] <= plane.getTranslate()[3][1])
+			{
+				r0[i] = meshes[i].getTranslate()[3];
+				r0[i].y = plane.getTranslate()[3][1];
+				u[i] = u[i] + a*currentFrame[i];
+				u[i].y = -u[i].y - drag.y;
+				firstFrame[i] = (GLfloat)glfwGetTime();
+			}
+		}
 
 		/*
 		**	RENDER 
@@ -303,7 +337,9 @@ int main()
 		// draw groud plane
 		draw(plane);
 		// draw particles
-		draw(particle1);
+		for (Mesh& m : meshes) {
+			draw(m);
+		}
 		
 				
 
