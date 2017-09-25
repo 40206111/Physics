@@ -59,6 +59,7 @@ int main()
 	glm::vec3 r = glm::vec3(0.0f, 5.0f, 0.0f);
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, 2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
+	float energy_loss = 0.9;
 
 	// time
 	GLfloat firstFrame = (GLfloat) glfwGetTime();
@@ -86,10 +87,47 @@ int main()
 		v += deltaTime * g;
 		r += deltaTime * v;
 		particle1.setPos(r);
-		if ((particle1.getPos().y <= o.y) || (particle1.getPos().y >= (o.y + d.y)) || (particle1.getPos().x <= o.x) || particle1.getPos().x >= (o.x + d.x) || particle1.getPos().z >= o.z || particle1.getPos().z <= (o.z - d.z))
+		//CHECK X left
+		if ((particle1.getPos().x <= o.x))
 		{
-			std::cout <<"x: " << particle1.getPos().x << std::endl << "y: " << particle1.getPos().y << std::endl << "z: " << particle1.getPos().z << std::endl;
-			v *= -1;
+			r.x = o.x;
+			v.x *= -1;
+			v *= energy_loss;
+		}
+		//CHECK Y bottom
+		if ((particle1.getPos().y <= o.y))
+		{
+			r.y = o.y;
+			v.y *= -1;
+			v *= energy_loss;
+		}
+		//CHECK Z forward
+		if (particle1.getPos().z >= o.z)
+		{
+			r.z = o.z;
+			v.z *= -1;
+			v *= energy_loss;
+		}
+		//CHECK X right
+		if (particle1.getPos().x >= (o.x + d.x))
+		{
+			r.x = o.x + d.x;
+			v.x *= -1;
+			v *= energy_loss;
+		}
+		//CHECK Y top
+		if ((particle1.getPos().y >= (o.y + d.y)))
+		{
+			r.y = o.y + d.x;
+			v.y *= -1;
+			v *= energy_loss;
+		}
+		//CHECK Z back
+		if (particle1.getPos().z <= (o.z - d.z))
+		{
+			r.z = o.z + d.x;
+			v.z *= -1;
+			v *= energy_loss;
 		}
 
 
