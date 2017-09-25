@@ -88,7 +88,7 @@ int main()
 		**	SIMULATION
 		*/
 
-		drag = 0.5 * 1.225 * glm::pow2(glm::length(v)) * 1.05 * 0.1 * - glm::normalize(v);
+		drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.1;
 		a = drag + g;
 		v += deltaTime * a;
 		r += deltaTime * v;
