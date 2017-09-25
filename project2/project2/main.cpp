@@ -54,12 +54,15 @@ int main()
 	particle1.rotate((GLfloat) M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
 	particle1.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
 
-	glm::vec3 v = glm::vec3(2.0f, 3.0f, 0.0f);
+	glm::vec3 v = glm::vec3(4.0f, 6.0f, -10.0f);
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
-	glm::vec3 r = glm::vec3(0.0f, 5.0f, 0.0f);
+	glm::vec3 r = glm::vec3(0.0f, 4.5f, 0.0f);
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, 2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
+	glm::vec3 a;
 	float energy_loss = 0.9;
+
+	glm::vec3 drag;
 
 	// time
 	GLfloat firstFrame = (GLfloat) glfwGetTime();
@@ -84,7 +87,10 @@ int main()
 		/*
 		**	SIMULATION
 		*/
-		v += deltaTime * g;
+
+		drag = 0.5 * 1.225 * glm::pow2(glm::length(v)) * 1.05 * 0.1 * - glm::normalize(v);
+		a = drag + g;
+		v += deltaTime * a;
 		r += deltaTime * v;
 		particle1.setPos(r);
 		//CHECK X left
@@ -125,7 +131,7 @@ int main()
 		//CHECK Z back
 		if (particle1.getPos().z <= (o.z - d.z))
 		{
-			r.z = o.z + d.x;
+			r.z = o.z - d.x;
 			v.z *= -1;
 			v *= energy_loss;
 		}
