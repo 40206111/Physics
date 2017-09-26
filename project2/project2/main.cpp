@@ -23,6 +23,8 @@
 #include "Application.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "Body.h"
+#include "Particle.h"
 
 
 // time
@@ -47,19 +49,15 @@ int main()
 
 
 	// create particle
-	Mesh particle1 = Mesh::Mesh();
+	Particle particle1 = Particle::Particle();
 	//scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
-	particle1.translate(glm::vec3(0.0f, 2.5f, 0.0f));
-	particle1.scale(glm::vec3(.1f, .1f, .1f));
-	particle1.rotate((GLfloat) M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
-	particle1.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+	particle1.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
 
 	glm::vec3 v = glm::vec3(4.0f, 6.0f, -10.0f);
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
 	glm::vec3 r = glm::vec3(0.0f, 4.5f, 0.0f);
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, 2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
-	glm::vec3 a;
 	float energy_loss = 0.9;
 
 	glm::vec3 drag;
@@ -89,9 +87,10 @@ int main()
 		*/
 
 		drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.1;
-		a = drag + g;
-		v += deltaTime * a;
-		r += deltaTime * v;
+		particle1.setAcc(drag + g);
+		v += deltaTime * particle1.getAcc();
+		particle1.setVel(v);
+		r += deltaTime * particle1.getVel();
 		particle1.setPos(r);
 		//CHECK X left
 		if ((particle1.getPos().x <= o.x))
@@ -99,6 +98,7 @@ int main()
 			r.x = o.x;
 			v.x *= -1;
 			v *= energy_loss;
+			particle1.setVel(v);
 		}
 		//CHECK Y bottom
 		if ((particle1.getPos().y <= o.y))
@@ -106,6 +106,7 @@ int main()
 			r.y = o.y;
 			v.y *= -1;
 			v *= energy_loss;
+			particle1.setVel(v);
 		}
 		//CHECK Z forward
 		if (particle1.getPos().z >= o.z)
@@ -113,6 +114,7 @@ int main()
 			r.z = o.z;
 			v.z *= -1;
 			v *= energy_loss;
+			particle1.setVel(v);
 		}
 		//CHECK X right
 		if (particle1.getPos().x >= (o.x + d.x))
@@ -120,6 +122,7 @@ int main()
 			r.x = o.x + d.x;
 			v.x *= -1;
 			v *= energy_loss;
+			particle1.setVel(v);
 		}
 		//CHECK Y top
 		if ((particle1.getPos().y >= (o.y + d.y)))
@@ -127,6 +130,7 @@ int main()
 			r.y = o.y + d.x;
 			v.y *= -1;
 			v *= energy_loss;
+			particle1.setVel(v);
 		}
 		//CHECK Z back
 		if (particle1.getPos().z <= (o.z - d.z))
@@ -134,6 +138,7 @@ int main()
 			r.z = o.z - d.x;
 			v.z *= -1;
 			v *= energy_loss;
+			particle1.setVel(v);
 		}
 
 
@@ -145,7 +150,7 @@ int main()
 		// draw groud plane
 		app.draw(plane);
 		// draw particles
-		app.draw(particle1);				
+		app.draw(particle1.getMesh());				
 
 		app.display();
 	}
