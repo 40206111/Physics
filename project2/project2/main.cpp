@@ -31,8 +31,9 @@
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
-double t = 0.0f;
 const double dt = 0.01;
+double currentTime = glfwGetTime();
+double accumulator = 0.0f;
 
 
 
@@ -50,20 +51,31 @@ int main()
 	plane.scale(glm::vec3(5.0f, 5.0f, 5.0f));
 	plane.setShader(Shader("resources/shaders/core.vert", "resources/shaders/core.frag"));
 
-
+	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 	// create particle
-	Particle particle1 = Particle::Particle();
-	//scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
-	particle1.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
+	Particle p1 = Particle::Particle();
+	p1.getMesh().setShader(pShader);
 
-	particle1.setVel(glm::vec3(4.0f, 6.0f, -10.0f));
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
-	glm::vec3 r = glm::vec3(0.0f, 4.5f, 0.0f);
+	glm::vec3 r = glm::vec3(0.0f, 2.0f, 0.0f);
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, 2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
 	float energy_loss = 0.9f;
-	glm::vec3 fg = particle1.getMass() * g;
+	glm::vec3 fg = p1.getMass() * g;
 	glm::vec3 drag;
+
+	// create particle
+	Particle p2 = Particle::Particle();
+	p2.getMesh().setShader(pShader);
+
+	p2.setPos(glm::vec3(-1.0f, 2.0f, 0.0f));
+
+	// create particle
+	Particle p3 = Particle::Particle();
+	p3.getMesh().setShader(pShader);
+
+	p3.setPos(glm::vec3(1.0f, 2.0f, 0.0f));
+
 
 	// time
 	GLfloat firstFrame = (GLfloat) glfwGetTime();
@@ -74,9 +86,14 @@ int main()
 		// Set frame time
 		GLfloat currentFrame = (GLfloat)  glfwGetTime() - firstFrame;
 		// the animation can be sped up or slowed down by multiplying currentFrame by a factor.
-		currentFrame *= 1.5f;
+		currentFrame *= 1.0f;
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+
+		double newTime = glfwGetTime();
+		double frameTime = newTime - currentTime;
+		currentTime = newTime;
+		accumulator += frameTime;
 
 		/*
 		**	INTERACTION
@@ -84,71 +101,77 @@ int main()
 		// Manage interaction
 		app.doMovement(deltaTime);
 
+		while (accumulator > dt)
+		{
+
+			/*
+			**	SIMULATION
+			*/
+			glm::vec3 v = p1.getVel();
+			drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
+			p1.setAcc((drag + fg) / p1.getMass());
+			v += deltaTime * p1.getAcc();
+			p1.setVel(v);
+			r += deltaTime * p1.getVel();
+			p1.setPos(r);
+			//CHECK X left
+			if ((p1.getPos().x <= o.x))
+			{
+				r.x = o.x;
+				v.x *= -1;
+				v *= energy_loss;
+			}
+			//CHECK Y bottom
+			if ((p1.getPos().y <= o.y))
+			{
+				r.y = o.y;
+				v.y *= -1;
+				v *= energy_loss;
+			}
+			//CHECK Z forward
+			if (p1.getPos().z >= o.z)
+			{
+				r.z = o.z;
+				v.z *= -1;
+				v *= energy_loss;
+			}
+			//CHECK X right
+			if (p1.getPos().x >= (o.x + d.x))
+			{
+				r.x = o.x + d.x;
+				v.x *= -1;
+				v *= energy_loss;
+			}
+			//CHECK Y top
+			if ((p1.getPos().y >= (o.y + d.y)))
+			{
+				r.y = o.y + d.x;
+				v.y *= -1;
+				v *= energy_loss;
+			}
+			//CHECK Z back
+			if (p1.getPos().z <= (o.z - d.z))
+			{
+				r.z = o.z - d.x;
+				v.z *= -1;
+				v *= energy_loss;
+			}
+			p1.setVel(v);
+
+			accumulator -= dt;
+		}
 
 		/*
-		**	SIMULATION
+		**	RENDER
 		*/
-		glm::vec3 v = particle1.getVel();
-		drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
-		particle1.setAcc((drag + fg)/particle1.getMass());
-		v += deltaTime * particle1.getAcc();
-		particle1.setVel(v);
-		r += deltaTime * particle1.getVel();
-		particle1.setPos(r);
-		//CHECK X left
-		if ((particle1.getPos().x <= o.x))
-		{
-			r.x = o.x;
-			v.x *= -1;
-			v *= energy_loss;
-		}
-		//CHECK Y bottom
-		if ((particle1.getPos().y <= o.y))
-		{
-			r.y = o.y;
-			v.y *= -1;
-			v *= energy_loss;
-		}
-		//CHECK Z forward
-		if (particle1.getPos().z >= o.z)
-		{
-			r.z = o.z;
-			v.z *= -1;
-			v *= energy_loss;
-		}
-		//CHECK X right
-		if (particle1.getPos().x >= (o.x + d.x))
-		{
-			r.x = o.x + d.x;
-			v.x *= -1;
-			v *= energy_loss;
-		}
-		//CHECK Y top
-		if ((particle1.getPos().y >= (o.y + d.y)))
-		{
-			r.y = o.y + d.x;
-			v.y *= -1;
-			v *= energy_loss;
-		}
-		//CHECK Z back
-		if (particle1.getPos().z <= (o.z - d.z))
-		{
-			r.z = o.z - d.x;
-			v.z *= -1;
-			v *= energy_loss;
-		}
-		particle1.setVel(v);
-
-
-		/*
-		**	RENDER 
-		*/		
 		// clear buffer
 		app.clear();
 		// draw groud plane
 		app.draw(plane);
 		// draw particles
-		app.draw(particle1.getMesh());				
+		app.draw(p1.getMesh());
+		app.draw(p2.getMesh());
+		app.draw(p3.getMesh());
 
 		app.display();
 	}
