@@ -31,6 +31,9 @@
 GLfloat deltaTime = 0.0f;
 GLfloat lastFrame = 0.0f;
 
+double t = 0.0f;
+const double dt = 0.01;
+
 
 
 // main function
@@ -58,7 +61,7 @@ int main()
 	glm::vec3 r = glm::vec3(0.0f, 4.5f, 0.0f);
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, 2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
-	float energy_loss = 0.99;
+	float energy_loss = 0.9f;
 	glm::vec3 fg = particle1.getMass() * g;
 	glm::vec3 drag;
 
@@ -86,7 +89,7 @@ int main()
 		**	SIMULATION
 		*/
 		glm::vec3 v = particle1.getVel();
-		drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.1;
+		drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
 		particle1.setAcc((drag + fg)/particle1.getMass());
 		v += deltaTime * particle1.getAcc();
 		particle1.setVel(v);
