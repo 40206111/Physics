@@ -19,9 +19,9 @@ public:
 	Mesh& getMesh() { return m_mesh; }
 
 	//transform matrices
-	glm::mat3 getTranslate() const { return m_mesh.getTranslate(); }
-	glm::mat3 getRotate() const { return m_mesh.getRotate(); }
-	glm::mat3 getScale() const { return m_mesh.getScale(); }
+	glm::mat4 getTranslate() const { return m_mesh.getTranslate(); }
+	glm::mat4 getRotate() const { return m_mesh.getRotate(); }
+	glm::mat4 getScale() const { return m_mesh.getScale(); }
 
 	//dynamic variables
 	glm::vec3& getAcc() { return m_acc; }
