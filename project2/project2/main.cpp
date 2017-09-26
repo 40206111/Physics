@@ -53,13 +53,13 @@ int main()
 	//scale it down (x.1), translate it up by 2.5 and rotate it by 90 degrees around the x axis
 	particle1.getMesh().setShader(Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag"));
 
-	glm::vec3 v = glm::vec3(4.0f, 6.0f, -10.0f);
+	particle1.setVel(glm::vec3(4.0f, 6.0f, -10.0f));
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
 	glm::vec3 r = glm::vec3(0.0f, 4.5f, 0.0f);
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, 2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
-	float energy_loss = 0.9;
-
+	float energy_loss = 0.99;
+	glm::vec3 fg = particle1.getMass() * g;
 	glm::vec3 drag;
 
 	// time
@@ -85,9 +85,9 @@ int main()
 		/*
 		**	SIMULATION
 		*/
-
+		glm::vec3 v = particle1.getVel();
 		drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.1;
-		particle1.setAcc(drag + g);
+		particle1.setAcc((drag + fg)/particle1.getMass());
 		v += deltaTime * particle1.getAcc();
 		particle1.setVel(v);
 		r += deltaTime * particle1.getVel();
@@ -98,7 +98,6 @@ int main()
 			r.x = o.x;
 			v.x *= -1;
 			v *= energy_loss;
-			particle1.setVel(v);
 		}
 		//CHECK Y bottom
 		if ((particle1.getPos().y <= o.y))
@@ -106,7 +105,6 @@ int main()
 			r.y = o.y;
 			v.y *= -1;
 			v *= energy_loss;
-			particle1.setVel(v);
 		}
 		//CHECK Z forward
 		if (particle1.getPos().z >= o.z)
@@ -114,7 +112,6 @@ int main()
 			r.z = o.z;
 			v.z *= -1;
 			v *= energy_loss;
-			particle1.setVel(v);
 		}
 		//CHECK X right
 		if (particle1.getPos().x >= (o.x + d.x))
@@ -122,7 +119,6 @@ int main()
 			r.x = o.x + d.x;
 			v.x *= -1;
 			v *= energy_loss;
-			particle1.setVel(v);
 		}
 		//CHECK Y top
 		if ((particle1.getPos().y >= (o.y + d.y)))
@@ -130,7 +126,6 @@ int main()
 			r.y = o.y + d.x;
 			v.y *= -1;
 			v *= energy_loss;
-			particle1.setVel(v);
 		}
 		//CHECK Z back
 		if (particle1.getPos().z <= (o.z - d.z))
@@ -138,8 +133,8 @@ int main()
 			r.z = o.z - d.x;
 			v.z *= -1;
 			v *= energy_loss;
-			particle1.setVel(v);
 		}
+		particle1.setVel(v);
 
 
 		/*
