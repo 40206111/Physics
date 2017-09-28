@@ -28,9 +28,6 @@
 
 
 // time
-GLfloat deltaTime = 0.0f;
-GLfloat lastFrame = 0.0f;
-
 const double dt = 0.01;
 double currentTime = glfwGetTime();
 double accumulator = 0.0f;
@@ -56,9 +53,10 @@ int main()
 	Particle p1 = Particle::Particle();
 	p1.getMesh().setShader(pShader);
 
+	//p1.setVel(glm::vec3(2.0f, 7.0f, 5.0f));
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
 	glm::vec3 r = glm::vec3(0.0f, 2.0f, 0.0f);
-	glm::vec3 o = glm::vec3(-2.5f, 0.0f, 2.5f);
+	glm::vec3 o = glm::vec3(-2.5f, 0.0f, -2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
 	float energy_loss = 0.9f;
 	glm::vec3 fg = p1.getMass() * g;
@@ -83,13 +81,7 @@ int main()
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
-		// Set frame time
-		GLfloat currentFrame = (GLfloat)  glfwGetTime() - firstFrame;
-		// the animation can be sped up or slowed down by multiplying currentFrame by a factor.
-		currentFrame *= 1.0f;
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-
+		//// Set frame time
 		double newTime = glfwGetTime();
 		double frameTime = newTime - currentTime;
 		currentTime = newTime;
@@ -99,7 +91,7 @@ int main()
 		**	INTERACTION
 		*/
 		// Manage interaction
-		app.doMovement(deltaTime);
+		app.doMovement(dt);
 
 		while (accumulator > dt)
 		{
@@ -110,52 +102,27 @@ int main()
 			glm::vec3 v = p1.getVel();
 			drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
 			p1.setAcc((drag + fg) / p1.getMass());
-			v += deltaTime * p1.getAcc();
+			v += dt * p1.getAcc();
 			p1.setVel(v);
-			r += deltaTime * p1.getVel();
+			r += dt * p1.getVel();
 			p1.setPos(r);
-			//CHECK X left
-			if ((p1.getPos().x <= o.x))
+
+			for (int i = 0; i < 3; i++)
 			{
-				r.x = o.x;
-				v.x *= -1;
-				v *= energy_loss;
+				if (p1.getPos()[i] <= o[i])
+				{
+					r[i] = o[i];
+					v[i] *= -1;
+					v *= energy_loss;
+				}
+				else if (p1.getPos()[i] >= (o[i] + d[i]))
+				{
+					r[i] = o[i] + d[i];
+					v[i] *= -1;
+					v *= energy_loss;
+				}
 			}
-			//CHECK Y bottom
-			if ((p1.getPos().y <= o.y))
-			{
-				r.y = o.y;
-				v.y *= -1;
-				v *= energy_loss;
-			}
-			//CHECK Z forward
-			if (p1.getPos().z >= o.z)
-			{
-				r.z = o.z;
-				v.z *= -1;
-				v *= energy_loss;
-			}
-			//CHECK X right
-			if (p1.getPos().x >= (o.x + d.x))
-			{
-				r.x = o.x + d.x;
-				v.x *= -1;
-				v *= energy_loss;
-			}
-			//CHECK Y top
-			if ((p1.getPos().y >= (o.y + d.y)))
-			{
-				r.y = o.y + d.x;
-				v.y *= -1;
-				v *= energy_loss;
-			}
-			//CHECK Z back
-			if (p1.getPos().z <= (o.z - d.z))
-			{
-				r.z = o.z - d.x;
-				v.z *= -1;
-				v *= energy_loss;
-			}
+
 			p1.setVel(v);
 
 			accumulator -= dt;
