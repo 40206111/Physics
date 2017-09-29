@@ -40,7 +40,7 @@ public:
 	//dynamic variables
 	void setAcc(const glm::vec3 &vect) { m_acc = vect; }
 	void setVel(const glm::vec3 &vect) { m_vel = vect; }
-	void setVel(int i, float p) { m_pos[i] = p; m_mesh.setPos(i, p); }
+	void setVel(int i, float p) { m_vel[i] = p; }
 	void setPos(const glm::vec3 &vect) { m_pos = vect; m_mesh.setPos(vect); }
 	void setPos(int i, float p) { m_pos[i] = p; m_mesh.setPos(i, p); }
 
