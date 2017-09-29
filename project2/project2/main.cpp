@@ -28,7 +28,7 @@
 
 
 // time
-const double dt = 0.01;
+const double dt = 0.0005f;
 double currentTime = glfwGetTime();
 double accumulator = 0.0f;
 
@@ -83,11 +83,12 @@ int main()
 		/*
 		**	INTERACTION
 		*/
-		// Manage interaction
-		app.doMovement(dt);
+
 
 		while (accumulator > dt)
 		{
+			// Manage interaction
+			app.doMovement(dt);
 
 			/*
 			**	SIMULATION
@@ -97,7 +98,7 @@ int main()
 			glm::vec3 r = p[0].getPos();
 			p[0].setAcc(g);
 			v += dt * p[0].getAcc();
-			r += dt * p[0].getVel();
+			r += dt * v;
 			p[0].setPos(r);
 			p[0].setVel(v);
 

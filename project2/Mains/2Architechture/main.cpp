@@ -76,8 +76,6 @@ int main()
 		/*
 		**	INTERACTION
 		*/
-		// Manage interaction
-		app.doMovement(dt);
 
 		while (accumulator > dt)
 		{
@@ -85,11 +83,13 @@ int main()
 			/*
 			**	SIMULATION
 			*/
+			// Manage interaction
+			app.doMovement(dt);
 			glm::vec3 v = p1.getVel();
 			drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
 			p1.setAcc((drag + fg) / p1.getMass());
 			v += dt * p1.getAcc();
-			r += dt * p1.getVel();
+			r += dt * v;
 			p1.setPos(r);
 
 			for (int i = 0; i < 3; i++)

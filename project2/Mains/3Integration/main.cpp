@@ -97,7 +97,7 @@ int main()
 			glm::vec3 r = p[0].getPos();
 			p[0].setAcc(g);
 			v += dt * p[0].getAcc();
-			r += dt * p[0].getVel();
+			r += dt * v;
 			p[0].setPos(r);
 			p[0].setVel(v);
 
