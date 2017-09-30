@@ -28,7 +28,7 @@
 
 
 // time
-const double dt = 0.0005f;
+const double dt = 0.005f;
 double currentTime = glfwGetTime();
 double accumulator = 0.0f;
 
@@ -50,24 +50,25 @@ int main()
 
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 
-
-	// create particle
-	Particle p2 = Particle::Particle();
-	p2.getMesh().setShader(pShader);
-	p2.setPos(glm::vec3(-1.0f, 2.0f, 0.0f));
-
-	// create particle
-	Particle p[2];
-	glm::vec3 r[2];
+	// create particles
+	int amount = 400;
+	std::vector<Particle> p(amount);
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, -2.5f);
 	glm::vec3 d = glm::vec3(5.0f, 5.0f, 5.0f);
+	float energy_loss = 0.9f;
+	std::vector<glm::vec3> fg(amount);
+	std::default_random_engine generate;
+	std::uniform_real_distribution<float> place(-2.5f, 2.5f);
+	std::uniform_real_distribution<float> placey(0.5f, 5.0f);
 
-	for (int i = 0; i < 2; i++)
+
+	for (int i = 0; i < amount; i++)
 	{
 		p[i] = Particle::Particle();
 		p[i].getMesh().setShader(pShader);
-		p[i].setPos(glm::vec3((p2.getPos()[0] + i + 1), 2.0f, 0.0f));
+		p[i].setPos(glm::vec3(place(generate), placey(generate), place(generate)));
+		fg[i] = p[i].getMass() * g;
 	}
 
 
@@ -93,37 +94,30 @@ int main()
 			/*
 			**	SIMULATION
 			*/
-			//SEMI-IMPLICIT EULER
-			glm::vec3 v = p[0].getVel();
-			glm::vec3 r = p[0].getPos();
-			p[0].setAcc(g);
-			v += dt * p[0].getAcc();
-			r += dt * v;
-			p[0].setPos(r);
-			p[0].setVel(v);
 
-			//FORWARD EULER
-			v = p[1].getVel();
-			r = p[1].getPos();
-			p[1].setAcc(g);
-			v += dt * p[1].getAcc();
-			r += dt * p[1].getVel();
-			p[1].setPos(r);
-			p[1].setVel(v);
-
-			for (int j = 0; j < 2; j++)
+			for (int i = 0; i < amount; i++)
 			{
-				for (int i = 0; i < 3; i++)
+				glm::vec3 v = p[i].getVel();
+				glm::vec3 r = p[i].getPos();
+				glm::vec3 drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
+				p[i].setAcc((drag + fg[i]) / p[i].getMass());
+				v += dt * p[0].getAcc();
+				r += dt * v;
+				p[i].setPos(r);
+				p[i].setVel(v);
+				for (int j = 0; j < 3; j++)
 				{
-					if (p[j].getPos()[i] <= o[i])
+					if (p[i].getPos()[j] <= o[j])
 					{
-						p[j].setPos(i, o[i]);
-						p[j].setVel(i, p[j].getVel()[i] * -1);
+						p[i].setPos(j, o[j]);
+						p[i].setVel(j, p[i].getVel()[j] * -1);
+						p[i].setVel(p[i].getVel() * energy_loss);
 					}
-					else if (p[j].getPos()[i] >= (o[i] + d[i]))
+					else if (p[i].getPos()[j] >= (o[j] + d[j]))
 					{
-						p[j].setPos(i, o[i] + d[i]);
-						p[j].setVel(i, p[j].getVel()[i] * -1);
+						p[i].setPos(j, o[j] + d[j]);
+						p[i].setVel(j, p[i].getVel()[j] * -1);
+						p[i].setVel(p[i].getVel() * energy_loss);
 					}
 				}
 			}
@@ -140,10 +134,10 @@ int main()
 		// draw groud plane
 		app.draw(plane);
 		// draw particles
-		app.draw(p[0].getMesh());
-		app.draw(p[1].getMesh());
-		app.draw(p2.getMesh());
-
+		for (int i = 0; i < amount; i++)
+		{
+			app.draw(p[i].getMesh());
+		}
 		app.display();
 	}
 
