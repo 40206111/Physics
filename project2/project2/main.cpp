@@ -51,7 +51,7 @@ int main()
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 
 	// create particles
-	int amount = 2;
+	int amount = 200;
 	std::vector<Particle> p(amount);
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
 	float energy_loss = 0.9f;
@@ -59,18 +59,18 @@ int main()
 	std::default_random_engine generate;
 	std::uniform_real_distribution<float> place(-2.5f, 2.5f);
 	std::uniform_real_distribution<float> placey(0.5f, 5.0f);
-
+	std::uniform_real_distribution<float> vel(-5.0f, 5.0f);
 
 	for (int i = 0; i < amount; i++)
 	{
 		p[i] = Particle::Particle();
-		//p[i].setVel(glm::vec3(1.0f, 0.0f, 1.0f));
+		//p[i].setVel(glm::vec3(vel(generate),vel(generate), vel(generate)));
 		p[i].getMesh().setShader(pShader);
-		p[i].setPos(glm::vec3(0.0f, 4.9f, 0.0f));
+		p[i].setPos(glm::vec3(place(generate),0.0f, place(generate)));
 		fg[i] = p[i].getMass() * g;
 	}
-	p[0].setPos(0, 0.0f);
-	p[1].setPos(0, 2.0f);
+	//p[0].setPos(0, 2.0f);
+	//p[1].setPos(0, 0.0f);
 
 	//Define Box
 	glm::vec3 o = glm::vec3(-2.5f, 0.0f, -2.5f);
@@ -81,17 +81,17 @@ int main()
 	glm::vec3 Ct = glm::vec3(0.0f, 2.5f, 0.0f);
 	glm::vec3 Cb = glm::vec3(0.0f);
 	//top and bottom radius
-	float Ctr = 1.25f;
-	float Cbr = 0.675f;
+	float Ctr = 2.25f;
+	float Cbr = 1.675f;
 	//Cone total hieght if it went to a point
-	float Ch = (Ctr*Ct.y) / (Cbr*((Ctr / Cbr) - 1));
+	float Ch = (Ctr*(Ct.y-Cb.y)) / (Ctr - Cbr);
 	//Where the cone would be a point if it got that far
 	glm::vec3 point = glm::vec3(Ct);
 	point.y -= Ch;
 	//force
 	glm::vec3 Fc = glm::vec3(0.0f);
 	//force coefficient
-	float coneForceCo = 5.0f;
+	float coneForceCo = 10.0f;
 
 
 	// Game loop
@@ -142,33 +142,41 @@ int main()
 						//radius to point at top of cone
 						float topR = (newR / (Ct.y - currentH.y))*Ct.y;
 						//point at top at new top radius
-						glm::vec3 topPoint = Ct;
-						topPoint.x = Ct.x + topR;
+						glm::vec3 projection = r - Ct;
+						projection.y = 0.0f;
+						projection = glm::normalize(projection);
+						glm::vec3 topPoint = projection * topR;
+						topPoint += Ct;
 						//vector from point to top of cone through particle
 						glm::vec3 dirTop = glm::vec3(topPoint - point);
-						//Fc = ((dirTop - fdir) * (coneR - newR))*coneForceCo;
-						Fc = glm::vec3(0.0f, 20.0f, 0.0f);
+						Fc = ((dirTop - fdir) * (coneR - newR))*coneForceCo;
+						//Fc = glm::vec3(-3.0f, 3.0f, 0.0f);
 					}
 					else
 					{
 						//set Cone force to zero
-						Fc = glm::vec3(0.0f);
+						Fc *= 0;
 					}
 
 				}
 				else
 				{
-					Fc = glm::vec3(0.0f);
+					//set cone force to zero
+					Fc *= 0;
 				}
 
 				//calculate drag
 				glm::vec3 drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
 				//total force
 				glm::vec3 F = drag + fg[i] + Fc;
+				if (i == 1)
+				{
+					//std::cout << Fc.x << ", " << Fc.y << ", " << Fc.z << std::endl;
+				}
 				//calculate acceleration
 				p[i].setAcc((F) / p[i].getMass());
 				//semi implicit Eular
-				v += dt * p[0].getAcc();
+				v += dt * p[i].getAcc();
 				r += dt * v;
 				//set postition and velocity
 				p[i].setPos(r);
