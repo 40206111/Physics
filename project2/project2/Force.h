@@ -44,3 +44,33 @@ private:
 
 };
 
+/*
+** HOOK CLASS
+*/
+class Hook : public Force
+{
+public:
+	Hook() {}
+	Hook(Body* b1, Body* b2, float ks, float kd, float rest)
+	{
+		m_ks = ks;
+		m_kd = kd;
+		m_rest = rest;
+		m_b1 = b1;
+		m_b2 = b2;
+	}
+
+	glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
+
+private:
+	//spring stiffness
+	float m_ks;
+	//damping coefficient
+	float m_kd;
+	//spring rest length
+	float m_rest;
+
+	Body* m_b1;
+	Body* m_b2;
+};
+
