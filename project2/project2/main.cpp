@@ -51,21 +51,21 @@ int main()
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 
 	// create particles
-	int amount = 10;
+	int amount = 1000;
 	std::vector<Particle> p(amount);
 	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
 	float energy_loss = 0.9f;
 	std::vector<glm::vec3> fg(amount);
 	std::default_random_engine generate;
-	std::uniform_real_distribution<float> place(-1.5f, 1.5f);
+	std::uniform_real_distribution<float> place(-0.5f, 0.5f);
 	std::uniform_real_distribution<float> vel(-5.0f, 5.0f);
 
 	for (int i = 0; i < amount; i++)
 	{
 		p[i] = Particle::Particle();
-		p[i].setVel(glm::vec3(vel(generate), 0.0f, vel(generate)));
+		//p[i].setVel(glm::vec3(vel(generate), 0.0f, vel(generate)));
 		p[i].getMesh().setShader(pShader);
-		p[i].setPos(glm::vec3(place(generate),4.5f, place(generate)));
+		p[i].setPos(glm::vec3(place(generate), 4.5f, place(generate)));
 		fg[i] = p[i].getMass() * g;
 	}
 
@@ -78,8 +78,8 @@ int main()
 	glm::vec3 Ct = glm::vec3(0.0f, 4.0f, 0.0f);
 	glm::vec3 Cb = glm::vec3(0.0f);
 	//top and bottom radius
-	float Ctr = 1.5f;
-	float Cbr = 1.0f;
+	float Ctr = 2.0f;
+	float Cbr = 3.0f;
 	//Cone total hieght if it went to a point
 	float Ch = (Ctr*(Ct.y - Cb.y)) / (Ctr - Cbr);
 	//Where the cone would be a point if it got that far
@@ -89,7 +89,6 @@ int main()
 	glm::vec3 Fc = glm::vec3(0.0f);
 	//force coefficient
 	float coneForceCo = 20.0f;
-
 
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
@@ -137,13 +136,13 @@ int main()
 						//direction of force
 						glm::vec3 fdir = r - point;
 						//radius to point at top of cone
-						float topR = Ch*(newR / ((Ch - (Ct.y-Cb.y)) + currentH.y));
+						float topR = Ch*(newR / ((Ch - (Ct.y - Cb.y)) + currentH.y));
 						//point at top at new top radius
 						glm::vec3 projection = r - Ct;
 						projection.y = 0.0f;
 						if (projection != glm::vec3(0.0f)) {
 							projection = glm::normalize(projection);
-						} 
+						}
 						glm::vec3 topPoint = projection * topR;
 						topPoint += Ct;
 						//vector from point to top of cone through particle
