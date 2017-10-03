@@ -7,8 +7,8 @@ class Body;
 class Force
 {
 public:
-	Force();
-	~Force();
+	Force() {}
+	~Force() {}
 
 	virtual glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
 };
