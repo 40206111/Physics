@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "Mesh.h"
+#include "Force.h"
 
 class Body
 {
@@ -31,6 +32,21 @@ public:
 	//physical properties
 	float getMass() const { return m_mass; }
 	float getCor() const { return m_cor; }
+
+	//force
+	std::vector<Force*> getForces() { return m_forces; }
+	void addForce(Force *f) { m_forces.push_back(f); }
+	//sum all forces applied to a body and return acceleration
+	glm::vec3 applyForced(glm::vec3 x, glm::vec3 v, float t, float dt)
+	{
+		glm::vec3 fAccumulator = glm::vec3(0.0f);
+
+		for (auto &f : m_forces)
+		{
+			fAccumulator += f->apply(getMass(), x, v);
+		}
+		return fAccumulator / getMass();
+	}
 
 	///SETTERS///
 
@@ -59,6 +75,7 @@ private:
 	float m_mass;
 	float m_cor;
 
+	std::vector<Force*> m_forces;
 	glm::vec3 m_acc;
 	glm::vec3 m_vel;
 	glm::vec3 m_pos;
