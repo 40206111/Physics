@@ -37,7 +37,7 @@ public:
 	std::vector<Force*> getForces() { return m_forces; }
 	void addForce(Force *f) { m_forces.push_back(f); }
 	//sum all forces applied to a body and return acceleration
-	glm::vec3 applyForced(glm::vec3 x, glm::vec3 v, float t, float dt)
+	glm::vec3 applyForces(glm::vec3 x, glm::vec3 v, float t, float dt)
 	{
 		glm::vec3 fAccumulator = glm::vec3(0.0f);
 

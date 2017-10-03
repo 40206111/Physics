@@ -25,12 +25,14 @@
 #include "Mesh.h"
 #include "Body.h"
 #include "Particle.h"
+#include "Force.h"
 
 
 // time
 const GLfloat dt = 0.01f;
 double currentTime = glfwGetTime();
 double accumulator = 0.0f;
+double t = 0.0f;
 
 
 
@@ -53,7 +55,7 @@ int main()
 	// create particles
 	int amount = 1000;
 	std::vector<Particle> p(amount);
-	glm::vec3 g = glm::vec3(0.0f, -9.8f, 0.0f);
+	Force* g = new Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
 	float energy_loss = 0.9f;
 	std::vector<glm::vec3> fg(amount);
 	std::default_random_engine generate;
@@ -63,10 +65,10 @@ int main()
 	for (int i = 0; i < amount; i++)
 	{
 		p[i] = Particle::Particle();
-		//p[i].setVel(glm::vec3(vel(generate), 0.0f, vel(generate)));
 		p[i].getMesh().setShader(pShader);
 		p[i].setPos(glm::vec3(place(generate), 4.5f, place(generate)));
-		fg[i] = p[i].getMass() * g;
+		p[i].addForce(g);
+		p[i].addForce(new Drag());
 	}
 
 	//Define Box
@@ -161,13 +163,11 @@ int main()
 					//set cone force to zero
 					Fc *= 0;
 				}
-
-				//calculate drag
-				glm::vec3 drag = 0.5 * 1.225 * -v * glm::length(v) * 1.05 * 0.01;
 				//total force
-				glm::vec3 F = drag + fg[i] + Fc;
+				glm::vec3 F = p[i].applyForces(p[i].getPos(), p[i].getVel(), t, dt);
+				F += Fc / p[i].getMass();
 				//calculate acceleration
-				p[i].setAcc((F) / p[i].getMass());
+				p[i].setAcc(F);
 				//semi implicit Eular
 				v += dt * p[i].getAcc();
 				r += dt * v;
@@ -195,6 +195,7 @@ int main()
 
 			//accumulate
 			accumulator -= dt;
+			t += accumulator;
 		}
 
 		/*
