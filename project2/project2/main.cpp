@@ -61,7 +61,7 @@ int main()
 
 	p[0] = Particle::Particle();
 	p[0].getMesh().setShader(pShader);
-	p[0].setPos(glm::vec3(-5.0f, 10.0f, 0.0f));
+	p[0].setPos(glm::vec3(-5.0f, 4.9f, 0.0f));
 
 	for (int i = 1; i < amount; i++)
 	{
@@ -115,6 +115,12 @@ int main()
 				//semi implicit Eular
 				v += dt * p[i].getAcc();
 				r = dt * v;
+
+				if (p[i].getPos().y < plane.getPos().y)
+				{
+					v.y *= -1;
+				}
+
 				//set postition and velocity
 				p[i].translate(r);
 				p[i].setVel(v);
@@ -132,7 +138,7 @@ int main()
 		// clear buffer
 		app.clear();
 		// draw groud plane
-		//app.draw(plane);
+		app.draw(plane);
 		// draw particles
 		for (int i = 0; i < amount; i++)
 		{
