@@ -72,7 +72,6 @@ int main()
 		p[i].setPos(glm::vec3(p[0].getPos().x + i, p[0].getPos().y, p[0].getPos().z));
 		if (i != amount - 1) 
 		{
-			//p[i].setPos(glm::vec3(p[0].getPos().x + i, p[0].getPos().y + 1, p[0].getPos().z));
 			p[i].addForce(g);
 			p[i].addForce(new Drag());
 			p[i].addForce(new Hook(&p[i], &p[i + 1], stiffness, dampening, 1.0f));

@@ -29,7 +29,7 @@
 
 
 // time
-const GLfloat dt = 0.001f;
+const GLfloat dt = 0.01f;
 double currentTime = glfwGetTime();
 double accumulator = 0.0f;
 double t = 0.0f;
@@ -53,30 +53,54 @@ int main()
 	Shader pShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 
 	// create particles
-	int amount = 10;
+	int row = 5;
+	int amount = glm::pow2(row);
 	std::vector<Particle> p(amount);
 	Force* g = new Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
-	float stiffness = 10.0f;
-	float dampening = 5.0f;
+	float stiffness = 30.0f;
+	float dampening = 0.5f;
 	float energy_loss = 0.9f;
+	float rest_length = 0.7;
 
 	p[0] = Particle::Particle();
 	p[0].getMesh().setShader(pShader);
-	p[0].setPos(glm::vec3(-5.0f, 3.0f, 0.0f));
+	p[0].setPos(glm::vec3(-(row / 2), 10.0f, 0.0f));
+
+	//set row level
+	int rowLevel = 0;
 
 	for (int i = 1; i < amount; i++)
 	{
 		p[i] = Particle::Particle();
 		p[i].setMass(0.1f);
 		p[i].getMesh().setShader(pShader);
-		p[i].setPos(glm::vec3(p[0].getPos().x + i, p[0].getPos().y, p[0].getPos().z));
-		if (i != amount - 1) 
+		p[i].setPos(glm::vec3(p[0].getPos().x + (i % row), p[0].getPos().y, p[0].getPos().z + rowLevel));
+
+		if (i != amount - 1 && i != row - 1 && i != amount - row)
 		{
-			//p[i].setPos(glm::vec3(p[0].getPos().x + i, p[0].getPos().y + 1, p[0].getPos().z));
-			p[i].addForce(g);
-			p[i].addForce(new Drag());
-			p[i].addForce(new Hook(&p[i], &p[i + 1], stiffness, dampening, 1.0f));
-			p[i].addForce(new Hook(&p[i], &p[i - 1], stiffness, dampening, 1.0f));
+			//p[i].addForce(g);
+			//p[i].addForce(new Drag());
+			if (i % row != row - 1)
+			{
+				p[i].addForce(new Hook(&p[i], &p[i + 1], stiffness, dampening, rest_length));
+
+			}
+			if (i % row != 0)
+			{
+				p[i].addForce(new Hook(&p[i], &p[i - 1], stiffness, dampening, rest_length));
+			}
+			if (rowLevel != row - 1)
+			{
+				p[i].addForce(new Hook(&p[i], &p[i + row], stiffness, dampening, rest_length));
+			}
+			if (rowLevel != 0)
+			{
+				p[i].addForce(new Hook(&p[i], &p[i - row], stiffness, dampening, rest_length));
+			}
+		}
+		if (i % row == row - 1)
+		{
+			rowLevel += 1;
 		}
 	}
 
@@ -114,19 +138,19 @@ int main()
 				glm::vec3 F = p[i].applyForces(p[i].getPos(), p[i].getVel(), t, dt);
 
 
-				if (p[i].getPos()[1] < plane.getPos()[1] + 0.04)
-				{
-					r[1] = plane.getPos()[1] + 0.04;
-					v[1] *= -1;
-					if (v.y > 0.1)
-					{
-						v *= energy_loss;
-					}
-					else
-					{
-						F.y = 0;
-					}
-				} 
+				//if (p[i].getPos()[1] < plane.getPos()[1] + 0.04)
+				//{
+				//	r[1] = plane.getPos()[1] + 0.04;
+				//	v[1] *= -1;
+				//	if (v.y > 0.1)
+				//	{
+				//		v *= energy_loss;
+				//	}
+				//	else
+				//	{
+				//		F.y = 0;
+				//	}
+				//} 
 
 
 				//calculate acceleration
