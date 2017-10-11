@@ -68,7 +68,7 @@ int main()
 		p[i] = Particle::Particle();
 		p[i].setMass(0.1f);
 		p[i].getMesh().setShader(pShader);
-		p[i].setPos(glm::vec3(p[0].getPos().x + i, p[0].getPos().y, p[0].getPos().z));
+		p[i].setPos(glm::vec3(p[0].getPos().x + i , p[0].getPos().y, p[0].getPos().z));
 		p[i].addForce(g);
 		p[i].addForce(new Drag());
 		if (i != amount - 1) 
@@ -120,7 +120,7 @@ int main()
 				p[i].setVel(v);
 
 			}
-
+			
 			//accumulate
 			accumulator -= dt;
 			t += accumulator;
