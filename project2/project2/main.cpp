@@ -76,7 +76,7 @@ int main()
 		p[i].getMesh().setShader(pShader);
 		p[i].setPos(glm::vec3(p[0].getPos().x + (i % row), p[0].getPos().y, p[0].getPos().z + rowLevel));
 
-		if (i != amount - 1 && i != row - 1 && i != amount - row)
+		if (i != row - 1)
 		{
 			p[i].addForce(g);
 			p[i].addForce(new Drag());
