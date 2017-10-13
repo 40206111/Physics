@@ -29,7 +29,7 @@
 
 
 // time
-const GLfloat dt = 0.001f;
+const GLfloat dt = 0.005f;
 double currentTime = glfwGetTime();
 double accumulator = 0.0f;
 double t = 0.0f;
@@ -57,7 +57,7 @@ int main()
 	int amount = glm::pow2(row);
 	std::vector<Particle> p(amount);
 	Force* g = new Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
-	float stiffness = 10.0f;
+	float stiffness = 15.0f;
 	float dampening = 5.0f;
 	float energy_loss = 0.9f;
 	float rest_length = 0.5;
