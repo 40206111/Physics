@@ -29,7 +29,7 @@
 
 
 // time
-const GLfloat dt = 0.001f;
+const GLfloat dt = 0.005f;
 double currentTime = glfwGetTime();
 double accumulator = 0.0f;
 double t = 0.0f;
@@ -57,10 +57,10 @@ int main()
 	int amount = glm::pow2(row);
 	std::vector<Particle> p(amount);
 	Force* g = new Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
-	float stiffness = 10.0f;
+	float stiffness = 50.0f;
 	float dampening = 5.0f;
 	float energy_loss = 0.9f;
-	float rest_length = 0.5;
+	float rest_length = 0.7;
 
 	p[0] = Particle::Particle();
 	p[0].getMesh().setShader(pShader);
@@ -131,19 +131,16 @@ int main()
 			for (int i = 0; i < amount; i++)
 			{
 
-				glm::vec3 v = p[i].getVel();
-				glm::vec3 r = p[i].getPos();
-
 				//total force
 				glm::vec3 F = p[i].applyForces(p[i].getPos(), p[i].getVel(), t, dt);
 
 				if (p[i].getPos()[1] < plane.getPos()[1] + 0.04)
 				{
-					r[1] = plane.getPos()[1] + 0.04;
-					v[1] *= -1;
-					if (v.y > 0.1)
+					p[i].getPos()[1] = plane.getPos()[1] + 0.04;
+					p[i].getVel()[1] *= -1;
+					if (p[i].getVel().y > 0.1)
 					{
-						v *= energy_loss;
+						p[i].setVel(p[i].getVel() * energy_loss);
 					}
 					else
 					{
@@ -151,16 +148,22 @@ int main()
 					}
 				} 
 
-
 				//calculate acceleration
 				p[i].setAcc(F);
+
+			}
+
+			for (int i = 0; i < amount; i++)
+			{
+				glm::vec3 v = p[i].getVel();
+				glm::vec3 r = p[i].getPos();
+
 				//semi implicit Eular
 				v += dt * p[i].getAcc();
 				r += dt * v;
 				p[i].setPos(r);
 				//set vel
 				p[i].setVel(v);
-
 			}
 
 			//accumulate

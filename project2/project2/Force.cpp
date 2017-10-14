@@ -49,30 +49,33 @@ glm::vec3 Hook::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel)
 ///WIND///
 glm::vec3 Wind::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel)
 {
+	//set normal
 	glm::vec3 n = ((this->m_b2->getPos() - pos) * (this->m_b3->getPos() - pos));
-	if (n != glm::vec3(0.0f))
+	//if the length is not zero
+	if (length(n) != 0.0f)
 	{
-		float a = 0.5f * glm::length(n);
-		n = n / length(n);
-
+		//set velocity of surface to average velocity
 		glm::vec3 vsur = (vel + this->m_b2->getVel() + this->m_b3->getVel()) / 3;
 
+		//set velocity to surface velocity minus wind velocity
 		glm::vec3 vtot = vsur - *this->m_windVel;
-		if (length(vtot) != 0)
+		//if length of total velocity not equal to zero
+		if (length(vtot) != 0.0f)
 		{
-			a = a * ((glm::abs(glm::dot(vtot, n)) / length(vtot)));
+			//set initial area
+			float a = 0.5f * glm::length(n);
+			//normalise normal
+			n = n / length(n);
+			//calculate segment area
+			a = a * ((glm::dot(vtot, n)/ length(vtot)));
 
-			glm::vec3 Ftot = 0.5f * glm::pow2(glm::length(vtot)) * a * n;
+			//work out force
+			glm::vec3 Ftot = 0.5f * glm::pow2(glm::length(vtot)) * a * -n;
 
+			//return force divided by 3
 			return (Ftot / 3.0f);
 		}
-		else
-		{
-			return glm::vec3(0.0f);
-		}
 	}
-	else
-	{
-		return glm::vec3(0.0f);
-	}
+	//return no force
+	return glm::vec3(0.0f);
 }
