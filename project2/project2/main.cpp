@@ -57,11 +57,15 @@ int main()
 	int amount = glm::pow2(row);
 	std::vector<Particle> p(amount);
 	Force* g = new Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
-	float stiffness = 15.0f;
-	float dampening = 5.0f;
-	float energy_loss = 0.9f;
-	float rest_length = 0.5;
+	float stiffness = 100.0f;
+	float dampening = 50.0f;
+	float energy_loss = 0.2f;
+	float rest_length = 1.0f;
+	glm::vec3 wind(0.0f, 0.0f, 200.0f);
+	std::default_random_engine generate;
+	std::uniform_real_distribution<float> variable(-200.0f, 200.0f);
 
+	//first stationary particle
 	p[0] = Particle::Particle();
 	p[0].getMesh().setShader(pShader);
 	p[0].setPos(glm::vec3(-(row / 2), 8.0f, 0.0f));
@@ -69,12 +73,13 @@ int main()
 	//set row level
 	int rowLevel = 0;
 
+	//set particle forces
 	for (int i = 1; i < amount; i++)
 	{
 		p[i] = Particle::Particle();
-		p[i].setMass(0.1f);
+		p[i].setMass(0.7f);
 		p[i].getMesh().setShader(pShader);
-		p[i].setPos(glm::vec3(p[0].getPos().x + (i % row), p[0].getPos().y, p[0].getPos().z + rowLevel));
+		p[i].setPos(glm::vec3(p[0].getPos().x + (i % row), p[0].getPos().y, p[0].getPos().z - rowLevel));
 
 		if (i != row - 1)
 		{
@@ -104,6 +109,8 @@ int main()
 		}
 	}
 
+	double startt = t;
+
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
 	{
@@ -117,8 +124,6 @@ int main()
 		/*
 		**	INTERACTION
 		*/
-
-
 		while (accumulator > dt)
 		{
 			// Manage interaction
@@ -139,7 +144,7 @@ int main()
 
 				if (p[i].getPos()[1] < plane.getPos()[1] + 0.04)
 				{
-					r[1] = plane.getPos()[1] + 0.04;
+					r[1] = plane.getPos()[1] + 0.04f;
 					v[1] *= -1;
 					if (v.y > 0.1)
 					{
@@ -149,8 +154,22 @@ int main()
 					{
 						F.y = 0;
 					}
-				} 
+				}
 
+				if (i > 0 && i < row - 1)
+				{
+					if (i + 1 < amount - 1 && i + row < amount - 1)
+					{
+						glm::vec3 n = ((p[i + 1].getPos() - p[i].getPos()) * (p[i + row].getPos() - p[i].getPos()));
+						if (n != glm::vec3(0.0f))
+						{
+							n = n / length(n);
+
+							F += ((wind * n)/3) / p[i].getMass();
+						}
+						//F += wind / p[i].getMass();
+					}
+				}
 
 				//calculate acceleration
 				p[i].setAcc(F);
@@ -161,6 +180,13 @@ int main()
 				//set vel
 				p[i].setVel(v);
 
+			}
+
+			if (t - startt >= 10)
+			{
+				std::cout << wind.z << std::endl;
+				wind.z = variable(generate);
+				startt = t;
 			}
 
 			//accumulate
