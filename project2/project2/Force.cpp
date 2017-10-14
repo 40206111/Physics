@@ -45,3 +45,34 @@ glm::vec3 Hook::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel)
 		return glm::vec3(fsd * e);
 	}
 }
+
+///WIND///
+glm::vec3 Wind::apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel)
+{
+	glm::vec3 n = ((this->m_b2->getPos() - pos) * (this->m_b3->getPos() - pos));
+	if (n != glm::vec3(0.0f))
+	{
+		float a = 0.5f * glm::length(n);
+		n = n / length(n);
+
+		glm::vec3 vsur = (vel + this->m_b2->getVel() + this->m_b3->getVel()) / 3;
+
+		glm::vec3 vtot = vsur - *this->m_windVel;
+		if (length(vtot) != 0)
+		{
+			a = a * ((glm::abs(glm::dot(vtot, n)) / length(vtot)));
+
+			glm::vec3 Ftot = 0.5f * glm::pow2(glm::length(vtot)) * a * n;
+
+			return (Ftot / 3.0f);
+		}
+		else
+		{
+			return glm::vec3(0.0f);
+		}
+	}
+	else
+	{
+		return glm::vec3(0.0f);
+	}
+}

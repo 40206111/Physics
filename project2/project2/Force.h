@@ -74,3 +74,26 @@ private:
 	Body* m_b2;
 };
 
+/*
+** WIND CLASS
+*/
+class Wind : public Force
+{
+public:
+	Wind() {}
+	Wind(Body* b2, Body* b3, glm::vec3* windVel)
+	{
+		m_windVel = windVel;
+		m_b2 = b2;
+		m_b3 = b3;
+	}
+
+	glm::vec3 apply(float mass, const glm::vec3 &pos, const glm::vec3 &vel);
+
+private:
+	glm::vec3* m_windVel;
+
+	Body* m_b2;
+	Body* m_b3;
+};
+

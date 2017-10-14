@@ -61,9 +61,9 @@ int main()
 	float dampening = 50.0f;
 	float energy_loss = 0.2f;
 	float rest_length = 1.0f;
-	glm::vec3 wind(0.0f, 0.0f, 200.0f);
+	glm::vec3 wind(0.0f, 0.0f, 0.0f);
 	std::default_random_engine generate;
-	std::uniform_real_distribution<float> variable(-200.0f, 200.0f);
+	std::uniform_real_distribution<float> variable(0.0f, 0.0f);
 
 	//first stationary particle
 	p[0] = Particle::Particle();
@@ -84,24 +84,45 @@ int main()
 		if (i != row - 1)
 		{
 			p[i].addForce(g);
-			p[i].addForce(new Drag());
+			//p[i].addForce(new Drag());
 			if (i % row != row - 1)
 			{
 				p[i].addForce(new Hook(&p[i], &p[i + 1], stiffness, dampening, rest_length));
+
+				if (rowLevel != 0)
+				{
+					p[i].addForce(new Wind(&p[i + 1], &p[i - row], &wind));
+					p[i].addForce(new Wind(&p[i + 1], &p[(i - row) + 1], &wind));
+				}
+
 
 			}
 			if (i % row != 0)
 			{
 				p[i].addForce(new Hook(&p[i], &p[i - 1], stiffness, dampening, rest_length));
+				if (rowLevel != 0)
+					p[i].addForce(new Wind(&p[i - 1], &p[i - row], &wind));
+
+				if (rowLevel != row - 1)
+					p[i].addForce(new Wind(&p[i - 1], &p[(i + row) - 1], &wind));
+
 			}
 			if (rowLevel != row - 1)
 			{
 				p[i].addForce(new Hook(&p[i], &p[i + row], stiffness, dampening, rest_length));
+
+				if (i % row - 1)
+					p[i].addForce(new Wind(&p[i + 1], &p[i + row], &wind));
+				if (i % row != 0)
+					p[i].addForce(new Wind(&p[i + row], &p[(i + row) - 1], &wind));
+
+
 			}
 			if (rowLevel != 0)
 			{
 				p[i].addForce(new Hook(&p[i], &p[i - row], stiffness, dampening, rest_length));
 			}
+
 		}
 		if (i % row == row - 1)
 		{
@@ -132,7 +153,6 @@ int main()
 			/*
 			**	SIMULATION
 			*/
-
 			for (int i = 0; i < amount; i++)
 			{
 
@@ -156,21 +176,6 @@ int main()
 					}
 				}
 
-				if (i > 0 && i < row - 1)
-				{
-					if (i + 1 < amount - 1 && i + row < amount - 1)
-					{
-						glm::vec3 n = ((p[i + 1].getPos() - p[i].getPos()) * (p[i + row].getPos() - p[i].getPos()));
-						if (n != glm::vec3(0.0f))
-						{
-							n = n / length(n);
-
-							F += ((wind * n)/3) / p[i].getMass();
-						}
-						//F += wind / p[i].getMass();
-					}
-				}
-
 				//calculate acceleration
 				p[i].setAcc(F);
 				//semi implicit Eular
@@ -182,12 +187,11 @@ int main()
 
 			}
 
-			if (t - startt >= 10)
-			{
-				std::cout << wind.z << std::endl;
-				wind.z = variable(generate);
-				startt = t;
-			}
+			//if (t - startt >= 10)
+			//{
+			//	wind.z = variable(generate);
+			//	startt = t;
+			//}
 
 			//accumulate
 			accumulator -= dt;
