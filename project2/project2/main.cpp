@@ -53,7 +53,7 @@ int main()
 
 	Shader rbShader = Shader("resources/shaders/core.vert", "resources/shaders/core_blue.frag");
 
-	Force* g = new Gravity(glm::vec3(0.0f, 9.8f, 0.0f));
+	Force* g = new Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
 
 	RigidBody rb = RigidBody::RigidBody();
 	Mesh m = Mesh::Mesh(Mesh::MeshType::CUBE);
@@ -62,8 +62,8 @@ int main()
 
 	// rigid body motion values
 	rb.translate(glm::vec3(0.0f, 5.0f, 0.0f));
-	rb.setVel(glm::vec3(0.0f, 7.0f, 0.0f));
-	rb.setAngVel(glm::vec3(0.0f, 2.0f, 0.0f));
+	rb.setVel(glm::vec3(2.0f, 7.0f, 0.0f));
+	rb.setAngVel(glm::vec3(0.5f, 2.0f, 3.0f));
 
 	rb.addForce(g);
 
@@ -90,11 +90,36 @@ int main()
 			/*
 			**	SIMULATION
 			*/
-			//intergration rotation
-			glm::vec3 dRot = rb.getAngVel() * dt;
-			if (glm::dot(dRot, dRot) > 0)
+			bool ok = true;
+			for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
 			{
-				rb.rotate(sqrt(glm::dot(dRot, dRot)), dRot);
+				glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
+				if (worldspace.y < plane.getPos().y)
+				{
+					std::cout << "(" << worldspace.x << ", " << worldspace.y << ", " << worldspace.z << ")" << std::endl;
+					ok = false;
+					break;
+				}
+
+			}
+			if (ok)
+			{
+				{
+					//total Force
+					glm::vec3 F = rb.applyForces(rb.getPos(), rb.getVel(), t, dt);
+					//intergration rotation
+					glm::vec3 dRot = rb.getAngVel() * dt;
+					if (glm::dot(dRot, dRot) > 0)
+					{
+						rb.rotate(sqrt(glm::dot(dRot, dRot)), dRot);
+					}
+
+					rb.setAcc(F);
+
+					//semi implicit Eular
+					rb.setVel(rb.getVel() + dt * rb.getAcc());
+					rb.setPos(rb.getPos() + dt * rb.getVel());
+				}
 			}
 
 
