@@ -641,8 +641,6 @@ project2/project2/glew/LICENSE.txt
 project2/project2/Shader.h
 project2/project2/OBJLoader.h
 project2/project2/OBJLoader.cpp
-project2/project2/Mesh.h
-project2/project2/Mesh.cpp
 project2/project2/Camera.h
 project2/project2/Application.h
 project2/project2/Application.cpp
