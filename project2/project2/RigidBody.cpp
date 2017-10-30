@@ -11,3 +11,8 @@ RigidBody::RigidBody()
 RigidBody::~RigidBody()
 {
 }
+
+glm::mat3 getInInertia()
+{
+
+}

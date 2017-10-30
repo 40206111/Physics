@@ -109,6 +109,7 @@ int main()
 					glm::vec3 F = rb.applyForces(rb.getPos(), rb.getVel(), t, dt);
 					//intergration rotation
 					glm::vec3 dRot = rb.getAngVel() * dt;
+
 					if (glm::dot(dRot, dRot) > 0)
 					{
 						rb.rotate(sqrt(glm::dot(dRot, dRot)), dRot);
