@@ -59,13 +59,17 @@ int main()
 	Mesh m = Mesh::Mesh(Mesh::MeshType::CUBE);
 	rb.setMesh(m);
 	rb.getMesh().setShader(rbShader);
+	rb.scale(glm::vec3(2.0f, 6.0f, 2.0f));
+	rb.setMass(1.0f);
 
 	// rigid body motion values
 	rb.translate(glm::vec3(0.0f, 5.0f, 0.0f));
-	rb.setVel(glm::vec3(2.0f, 7.0f, 0.0f));
+	//rb.setVel(glm::vec3(2.0f, 7.0f, 0.0f));
 	rb.setAngVel(glm::vec3(0.5f, 2.0f, 3.0f));
 
-	rb.addForce(g);
+	//rb.addForce(g);
+
+	glm::vec3 ipos(1.0f, 3.0f, 0.0f);
 
 	double startt = t;
 
@@ -75,9 +79,10 @@ int main()
 		//// Set frame time
 		double newTime = glfwGetTime();
 		double frameTime = newTime - currentTime;
-		frameTime *= 1.2f;
+		frameTime *= 1.0f;
 		currentTime = newTime;
 		accumulator += frameTime;
+		
 
 		/*
 		**	INTERACTION
@@ -91,29 +96,31 @@ int main()
 			**	SIMULATION
 			*/
 			bool ok = true;
-			for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
-			{
-				glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
-				if (worldspace.y < plane.getPos().y)
-				{
-					std::cout << "(" << worldspace.x << ", " << worldspace.y << ", " << worldspace.z << ")" << std::endl;
-					ok = false;
-					break;
-				}
+			//for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
+			//{
+			//	glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
+			//	if (worldspace.y < plane.getPos().y)
+			//	{
+			//		//std::cout << "(" << worldspace.x << ", " << worldspace.y << ", " << worldspace.z << ")" << std::endl;
+			//		ok = false;
+			//		break;
+			//	}
 
-			}
+			//}
 			if (ok)
 			{
 				{
 					//total Force
 					glm::vec3 F = rb.applyForces(rb.getPos(), rb.getVel(), t, dt);
-					//intergration rotation
-					glm::vec3 dRot = rb.getAngVel() * dt;
 
-					if (glm::dot(dRot, dRot) > 0)
-					{
-						rb.rotate(sqrt(glm::dot(dRot, dRot)), dRot);
-					}
+					//intergration rotation
+					rb.setAngVel(rb.getAngVel() + dt * rb.getAngAcc());
+					glm::mat3 angVelSkew = glm::matrixCross3(rb.getAngVel());
+					glm::mat3 R = glm::mat3(rb.getRotate());
+					R += dt*angVelSkew * R;
+					R = glm::orthonormalize(R);
+					rb.setRotate(R);
+					//
 
 					rb.setAcc(F);
 
@@ -135,7 +142,7 @@ int main()
 		// clear buffer
 		app.clear();
 		// draw ground plane
-		app.draw(plane);
+		//app.draw(plane);
 		// draw rigidbody
 		app.draw(rb.getMesh());
 		app.display();
@@ -145,4 +152,3 @@ int main()
 
 	return EXIT_SUCCESS;
 }
-

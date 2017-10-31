@@ -86,6 +86,8 @@ public:
 	// set i_th coordinate of mesh center to float p (x: i=0, y: i=1, z: i=2)
 	void setPos(int i, float p) { m_translate[3][i] = p; }
 
+	void setRotate(glm::mat4 R) { m_rotate = R; }
+
 	// allocate shader to mesh
 	void setShader(const Shader &shader) {
 		m_shader = shader;

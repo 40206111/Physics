@@ -49,52 +49,52 @@ Mesh::Mesh(MeshType type)
 
 	case QUAD:
 		// create quad
-		vertices[0] = Vertex(glm::vec3(-1.0f, 0.0f, -1.0f));
-		vertices[1] = Vertex(glm::vec3(1.0f, 0.0f, -1.0f));
-		vertices[2] = Vertex(glm::vec3(-1.0f, 0.0f, 1.0f));
-		vertices[3] = Vertex(glm::vec3(1.0f, 0.0f, -1.0f));
-		vertices[4] = Vertex(glm::vec3(-1.0f, 0.0f, 1.0f));
-		vertices[5] = Vertex(glm::vec3(1.0f, 0.0f, 1.0f));
+		vertices[0] = Vertex(glm::vec3(-0.5f, 0.0f, -0.5f));
+		vertices[1] = Vertex(glm::vec3(0.5f, 0.0f, -0.5f));
+		vertices[2] = Vertex(glm::vec3(-0.5f, 0.0f, 0.5f));
+		vertices[3] = Vertex(glm::vec3(0.5f, 0.0f, -0.5f));
+		vertices[4] = Vertex(glm::vec3(-0.5f, 0.0f, 0.5f));
+		vertices[5] = Vertex(glm::vec3(0.5f, 0.0f, 0.5f));
 		break;
 
 	case CUBE:
 		// create cube
-		vertices[0] = Vertex(glm::vec3(-1.0f, -1.0f, -1.0f));
-		vertices[1] = Vertex(glm::vec3(1.0f, -1.0f, -1.0f));
-		vertices[2] = Vertex(glm::vec3(1.0f, 1.0f, -1.0f));
-		vertices[3] = Vertex(glm::vec3(-1.0f, -1.0f, -1.0f));
-		vertices[4] = Vertex(glm::vec3(1.0f, 1.0f, -1.0f));
-		vertices[5] = Vertex(glm::vec3(-1.0f, 1.0f, -1.0f));
-		vertices[6] = Vertex(glm::vec3(-1.0f, -1.0f, 1.0f));
-		vertices[7] = Vertex(glm::vec3(1.0f, -1.0f, 1.0f));
-		vertices[8] = Vertex(glm::vec3(1.0f, 1.0f, 1.0f));
-		vertices[9] = Vertex(glm::vec3(-1.0f, -1.0f, 1.0f));
-		vertices[10] = Vertex(glm::vec3(1.0f, 1.0f, 1.0f));
-		vertices[11] = Vertex(glm::vec3(-1.0f, 1.0f, 1.0f));
-		vertices[12] = Vertex(glm::vec3(-1.0f, -1.0f, -1.0f));
-		vertices[13] = Vertex(glm::vec3(1.0f, -1.0f, -1.0f));
-		vertices[14] = Vertex(glm::vec3(1.0f, -1.0f, 1.0f));
-		vertices[15] = Vertex(glm::vec3(-1.0f, -1.0f, -1.0f));
-		vertices[16] = Vertex(glm::vec3(1.0f, -1.0f, 1.0f));
-		vertices[17] = Vertex(glm::vec3(-1.0f, -1.0f, 1.0f));
-		vertices[18] = Vertex(glm::vec3(-1.0f, 1.0f, -1.0f));
-		vertices[19] = Vertex(glm::vec3(1.0f, 1.0f, -1.0f));
-		vertices[20] = Vertex(glm::vec3(1.0f, 1.0f, 1.0f));
-		vertices[21] = Vertex(glm::vec3(-1.0f, 1.0f, -1.0f));
-		vertices[22] = Vertex(glm::vec3(1.0f, 1.0f, 1.0f));
-		vertices[23] = Vertex(glm::vec3(-1.0f, 1.0f, 1.0f));
-		vertices[24] = Vertex(glm::vec3(-1.0f, -1.0f, -1.0f));
-		vertices[25] = Vertex(glm::vec3(-1.0f, 1.0f, -1.0f));
-		vertices[26] = Vertex(glm::vec3(-1.0f, 1.0f, 1.0f));
-		vertices[27] = Vertex(glm::vec3(-1.0f, -1.0f, -1.0f));
-		vertices[28] = Vertex(glm::vec3(-1.0f, 1.0f, 1.0f));
-		vertices[29] = Vertex(glm::vec3(-1.0f, -1.0f, 1.0f));
-		vertices[30] = Vertex(glm::vec3(1.0f, -1.0f, -1.0f));
-		vertices[31] = Vertex(glm::vec3(1.0f, 1.0f, -1.0f));
-		vertices[32] = Vertex(glm::vec3(1.0f, 1.0f, 1.0f));
-		vertices[33] = Vertex(glm::vec3(1.0f, -1.0f, -1.0f));
-		vertices[34] = Vertex(glm::vec3(1.0f, 1.0f, 1.0f));
-		vertices[35] = Vertex(glm::vec3(1.0f, -1.0f, 1.0f));
+		vertices[0] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[1] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[2] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[3] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[4] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[5] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[6] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[7] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
+		vertices[8] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[9] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[10] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[11] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[12] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[13] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[14] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
+		vertices[15] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[16] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
+		vertices[17] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[18] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[19] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[20] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[21] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[22] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[23] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[24] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[25] = Vertex(glm::vec3(-0.5f, 0.5f, -0.5f));
+		vertices[26] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[27] = Vertex(glm::vec3(-0.5f, -0.5f, -0.5f));
+		vertices[28] = Vertex(glm::vec3(-0.5f, 0.5f, 0.5f));
+		vertices[29] = Vertex(glm::vec3(-0.5f, -0.5f, 0.5f));
+		vertices[30] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[31] = Vertex(glm::vec3(0.5f, 0.5f, -0.5f));
+		vertices[32] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[33] = Vertex(glm::vec3(0.5f, -0.5f, -0.5f));
+		vertices[34] = Vertex(glm::vec3(0.5f, 0.5f, 0.5f));
+		vertices[35] = Vertex(glm::vec3(0.5f, -0.5f, 0.5f));
 		break;
 	}
 

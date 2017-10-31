@@ -59,6 +59,7 @@ public:
 	void setVel(int i, float p) { m_vel[i] = p; }
 	void setPos(const glm::vec3 &vect) { m_pos = vect; m_mesh.setPos(vect); }
 	void setPos(int i, float p) { m_pos[i] = p; m_mesh.setPos(i, p); }
+	void setRotate(glm::mat4 R) { m_mesh.setRotate(R); }
 
 	//physical properties
 	void setCor(float cor) { m_cor = cor; }
@@ -69,10 +70,12 @@ public:
 	void rotate(float angle, const glm::vec3 &vect);
 	void scale(const glm::vec3 &vectt);
 
+protected:
+	float m_mass;
+
 private:
 	Mesh m_mesh;
 
-	float m_mass;
 	float m_cor;
 
 	std::vector<Force*> m_forces;
