@@ -41,6 +41,16 @@ void outVec3(glm::vec3 v)
 	std::cout << v.x << ", " << v.y << ", " << v.z << std::endl;
 }
 
+void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
+{
+	glm::vec3 deltav = impulse / rb.getMass();
+	rb.setVel(rb.getVel() + deltav);
+	glm::vec3 r = ipos - rb.getPos();
+	glm::vec3 deltaomega = rb.getInvInertia() * glm::cross(r, impulse);
+	rb.setAngVel(rb.getAngVel() + deltaomega);
+
+}
+
 // main function
 int main()
 {
@@ -68,16 +78,16 @@ int main()
 
 	// rigid body motion values
 	rb.translate(glm::vec3(0.0f, 5.0f, 0.0f));
-	//rb.setVel(glm::vec3(2.0f, 7.0f, 0.0f));
+	//rb.setVel(glm::vec3(3.0f, 0.0f, 0.0f));
 	//rb.setAngVel(glm::vec3(0.5f, 2.0f, 3.0f));
 
-	//rb.addForce(g);
+	rb.addForce(g);
 
 	glm::vec3 torque;
 	glm::vec3 L(0.0f);
 
-	glm::vec3 ipos(1.0f, 7.0f, 0.0f);
-	glm::vec3 impulse(-3.0f, 0.0f, 0.0f);
+	glm::vec3 ipos(1.0f, 4.0f, 0.0f);
+	glm::vec3 impulse(1.0f, 1.0f, 1.0f);
 	bool applied = false;
 
 	double startt = t;
@@ -104,62 +114,54 @@ int main()
 			/*
 			**	SIMULATION
 			*/
-			bool ok = true;
-			//for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
-			//{
-			//	glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
-			//	if (worldspace.y < plane.getPos().y)
-			//	{
-			//		//std::cout << "(" << worldspace.x << ", " << worldspace.y << ", " << worldspace.z << ")" << std::endl;
-			//		ok = false;
-			//		break;
-			//	}
-
-			//}
-			if (ok)
+			for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
 			{
+				glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
+				if (worldspace.y < plane.getPos().y)
 				{
-					///
-
-					glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
-
-					//intergration rotation
-					//inverted?
-					//torque = glm::inverse(ininertia) * rb.getAngAcc() + rb.getAngVel() + glm::inverse(ininertia) * rb.getAngVel();
-					//L = L + dt * torque;
-					//rb.setAngVel(rb.getInvInertia() * L);
-					//outVec3(rb.getAngAcc());
-					rb.setAngVel(rb.getAngVel() + dt * rb.getAngAcc());
-					glm::mat3 angVelSkew = glm::matrixCross3(rb.getAngVel());
-					glm::mat3 R = glm::mat3(rb.getRotate());
-					R += dt*angVelSkew * R;
-					R = glm::orthonormalize(R);
-					rb.setRotate(R);
-
-					///
-
-					//total Force/mass
-					glm::vec3 F = rb.applyForces(rb.getPos(), rb.getVel(), t, dt);
-
-					//sett acceleration
-					rb.setAcc(F);
-
-					//semi implicit Eular
-					rb.setVel(rb.getVel() + dt * rb.getAcc());
-					rb.setPos(rb.getPos() + dt * rb.getVel());
-
-					if (t >= 2 && !applied)
-					{
-						glm::vec3 deltav = impulse / rb.getMass();
-						rb.setVel(rb.getVel() + deltav);
-						glm::vec3 r = ipos - rb.getPos();
-						glm::vec3 deltaomega = rb.getInvInertia() * glm::cross(r, impulse);
-						rb.setAngVel(rb.getAngVel() + deltaomega);
-
-						applied = true;
-					}
-
+					rb.setPos(1, rb.getPos().y + (plane.getPos().y - worldspace.y));
+					glm::vec3 normal(0.0f, 1.0f, 0.0f);
+					//outVec3(glm::vec3(worldspace);
+					break;
 				}
+
+			}
+			{
+				///
+
+				glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
+
+				//intergration rotation
+				//inverted?
+				//torque = glm::inverse(ininertia) * rb.getAngAcc() + rb.getAngVel() + glm::inverse(ininertia) * rb.getAngVel();
+				//L = L + dt * torque;
+				//rb.setAngVel(rb.getInvInertia() * L);
+				//outVec3(rb.getAngAcc());
+				rb.setAngVel(rb.getAngVel() + dt * rb.getAngAcc());
+				glm::mat3 angVelSkew = glm::matrixCross3(rb.getAngVel());
+				glm::mat3 R = glm::mat3(rb.getRotate());
+				R += dt*angVelSkew * R;
+				R = glm::orthonormalize(R);
+				rb.setRotate(R);
+
+				///
+
+				//total Force/mass
+				glm::vec3 F = rb.applyForces(rb.getPos(), rb.getVel(), t, dt);
+
+				//sett acceleration
+				rb.setAcc(F);
+
+				//semi implicit Eular
+				rb.setVel(rb.getVel() + dt * rb.getAcc());
+				rb.setPos(rb.getPos() + dt * rb.getVel());
+
+				//if (t >= 2 && !applied)
+				//{
+				//	applyImpulse(impulse, ipos, rb);
+				//	applied = true;
+				//}
+
 			}
 
 
@@ -177,7 +179,7 @@ int main()
 		// clear buffer
 		app.clear();
 		// draw ground plane
-		//app.draw(plane);
+		app.draw(plane);
 		// draw rigidbody
 		app.draw(rb.getMesh());
 		app.display();
