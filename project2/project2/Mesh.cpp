@@ -101,9 +101,9 @@ Mesh::Mesh(MeshType type)
 	// generate unique vertex vector (no duplicates )
 	m_vertices = std::vector < Vertex >(std::begin(vertices), std::end(vertices));
 	bool nope = false;
-	for (int i = 0; i < 36; i++)
+	for (int i = 0; i < 35; i++)
 	{
-		for (int j = i + 1; j < 35; j++)
+		for (int j = i + 1; j < 36; j++)
 		{
 			if (vertices[i].getCoord() == vertices[j].getCoord())
 			{

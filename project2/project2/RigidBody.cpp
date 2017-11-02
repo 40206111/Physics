@@ -6,6 +6,7 @@
 RigidBody::RigidBody()
 {
 	setMesh(Mesh::Mesh());
+	setMass(1.0f);
 }
 
 
@@ -20,9 +21,9 @@ void RigidBody::InInertia()
 	float h2 = pow(this->getScale()[1][1], 2);
 	float d2 = pow(this->getScale()[2][2], 2);
 
-	float first = twelthmass + (h2 + d2);
-	float second = twelthmass + (w2 + d2);
-	float third = twelthmass + (w2 + h2);
+	float first = twelthmass * (h2 + d2);
+	float second = twelthmass * (w2 + d2);
+	float third = twelthmass * (w2 + h2);
 	
 	glm::mat3 inertia = glm::mat3(0.0f);
 
