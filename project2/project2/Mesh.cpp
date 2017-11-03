@@ -100,20 +100,18 @@ Mesh::Mesh(MeshType type)
 
 	// generate unique vertex vector (no duplicates )
 	m_vertices = std::vector < Vertex >(std::begin(vertices), std::end(vertices));
+
+
 	bool nope = false;
-	for (int i = 0; i < 35; i++)
+	for (int i = 0; i < m_vertices.size() - 1; i++)
 	{
-		for (int j = i + 1; j < 36; j++)
+		for (int j = i + 1; j < m_vertices.size(); j++)
 		{
-			if (vertices[i].getCoord() == vertices[j].getCoord())
+			if (m_vertices[i].getCoord() == m_vertices[j].getCoord())
 			{
-				nope = true;
-				break;
+				m_vertices.erase(m_vertices.begin() + j);
+				j--;
 			}
-		}
-		if (!nope)
-		{
-			m_vertices[i] = vertices[i];
 		}
 	}
 
