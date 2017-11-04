@@ -77,20 +77,19 @@ int main()
 	rb.setMass(2.0f);
 
 	// rigid body motion values
-	rb.translate(glm::vec3(0.0f, 5.0f, 0.0f));
-	rb.setVel(glm::vec3(2.0f, 0.0f, 0.0f));
+	rb.translate(glm::vec3(0.0f, 6.0f, 0.0f));
+	rb.setVel(glm::vec3(0.0f, 3.0f, 0.0f));
 	rb.setAngVel(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	//rb.addForce(g);
-
-	std::cout << "Inertia Matrix" << std::endl;
-	std::cout << glm::to_string(rb.getInvInertia()) << std::endl;
+	rb.addForce(g);
 
 	glm::vec3 ipos(1.0f, 4.0f, 0.0f);
 	glm::vec3 impulse(-4.0f, 0.0f, 0.0f);
 	bool applied = false;
+	std::vector<glm::vec3> collisions;
 
 	double startt = t;
+	bool ok = true;
 
 	// Game loop
 	while (!glfwWindowShouldClose(app.getWindow()))
@@ -111,6 +110,33 @@ int main()
 			// Manage interaction
 			app.doMovement(dt);
 
+			/*
+			**	SIMULATION
+			*/
+			float theY = 0;
+			for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
+			{
+				glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
+				if (worldspace.y <= plane.getPos().y && ok)
+				{
+					collisions.push_back(glm::vec3(worldspace));
+				}
+
+			}
+			if (collisions.size() > 0 && ok)
+			{
+				glm::vec3 average;
+				for (glm::vec3 c : collisions)
+				{
+					average += c;
+					outVec3(c);
+				}
+				std::cout << "AVERAGE" << std::endl;
+				average = average / collisions.size();
+				outVec3(average);
+				ok = false;
+			}
+			if (ok)
 			{
 				///
 
@@ -136,12 +162,6 @@ int main()
 				rb.setVel(rb.getVel() + dt * rb.getAcc());
 				rb.setPos(rb.getPos() + dt * rb.getVel());
 
-				if (t >= 2 && !applied)
-				{
-					applyImpulse(impulse, ipos, rb);
-					applied = true;
-				}
-
 			}
 
 
@@ -151,13 +171,14 @@ int main()
 			accumulator -= dt;
 			t += dt;
 		}
+
 		/*
 		**	RENDER
 		*/
 		// clear buffer
 		app.clear();
 		// draw ground plane
-		//app.draw(plane);
+		app.draw(plane);
 		// draw rigidbody
 		app.draw(rb.getMesh());
 		app.display();
