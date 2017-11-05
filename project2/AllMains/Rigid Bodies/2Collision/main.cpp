@@ -41,12 +41,20 @@ void outVec3(glm::vec3 v)
 	std::cout << v.x << ",\t" << v.y << ",\t" << v.z << std::endl;
 }
 
+//apply impulse method
 void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
 {
+	//calculate ininertaia with rotation
+	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
+	//calculate change in velocity
 	glm::vec3 deltav = impulse / rb.getMass();
+	//set new velocity
 	rb.setVel(rb.getVel() + deltav);
+	//calculate vector from center of mass to impulse position
 	glm::vec3 r = ipos - rb.getPos();
-	glm::vec3 deltaomega = rb.getInvInertia() * glm::cross(r, impulse);
+	//calculate change in angular velocity
+	glm::vec3 deltaomega = ininertia * glm::cross(r, impulse);
+	//set new angular velocity
 	rb.setAngVel(rb.getAngVel() + deltaomega);
 
 }
@@ -113,33 +121,45 @@ int main()
 			/*
 			**	SIMULATION
 			*/
-			float theY = 0;
+			//loop through collisions
 			for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
 			{
+				//put vertex into worldspace
 				glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
+				//check if vertex is below plane
 				if (worldspace.y <= plane.getPos().y && ok)
 				{
+					//add vertex to collisions
 					collisions.push_back(glm::vec3(worldspace));
 				}
 
 			}
+			//if collided
 			if (collisions.size() > 0 && ok)
 			{
+				//declare average
 				glm::vec3 average;
+				//loop through collisions
 				for (glm::vec3 c : collisions)
 				{
+					//add collision to average
 					average += c;
+					//output collision
 					outVec3(c);
 				}
-				std::cout << "AVERAGE" << std::endl;
+				//calculate average
 				average = average / collisions.size();
+				//output average
+				std::cout << "AVERAGE" << std::endl;
 				outVec3(average);
+				//set ok to false
 				ok = false;
 			}
+			//if hasn't collided 
 			if (ok)
 			{
 				///
-
+				//calculate inverse inetia with rotation
 				glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
 
 				//intergration rotation

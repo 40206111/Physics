@@ -3,7 +3,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>  
 #include <random>
-#include <math.h>
 
 // Std. Includes
 #include <string>
@@ -42,31 +41,13 @@ void outVec3(glm::vec3 v)
 	std::cout << v.x << ",\t" << v.y << ",\t" << v.z << std::endl;
 }
 
-//apply impulse when impulse is a float
-void applyImpulse(float impulse, glm::vec3 ipos, RigidBody &rb, glm::vec3 normal)
-{
-	//calculate ininertia with rotation
-	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
-	//calculate change in velocity
-	glm::vec3 deltav = (impulse / rb.getMass()) * normal;
-	//set new velocity
-	rb.setVel(rb.getVel() + deltav);
-	//calculate vector from center of mass to impulse position
-	glm::vec3 r = ipos - rb.getPos();
-	//calculate change in angular velocity
-	glm::vec3 deltaomega = impulse * ininertia * glm::cross(r, normal);
-	//set new angular velocity
-	rb.setAngVel(rb.getAngVel() + deltaomega);
-
-}
-
-//apply impulse when impulse is a vector
+//apply impulse method
 void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
 {
-	//calculate ininertia with roataion
+	//calculate ininertaia with rotation
 	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
 	//calculate change in velocity
-	glm::vec3 deltav = (impulse / rb.getMass());
+	glm::vec3 deltav = impulse / rb.getMass();
 	//set new velocity
 	rb.setVel(rb.getVel() + deltav);
 	//calculate vector from center of mass to impulse position
@@ -104,14 +85,21 @@ int main()
 	rb.setMass(2.0f);
 
 	// rigid body motion values
-	rb.translate(glm::vec3(0.0f, 8.0f, 0.0f));
-	rb.setVel(glm::vec3(0.0f, 0.0f, 0.0f));
-	rb.setAngVel(glm::vec3(0.1f, 0.1f, 0.1f));
-	//rigid body coefficient of restitution
-	rb.setCor(0.6);
+	rb.translate(glm::vec3(0.0f, 5.0f, 0.0f));
+	rb.setVel(glm::vec3(2.0f, 0.0f, 0.0f));
+	rb.setAngVel(glm::vec3(0.0f, 0.0f, 0.0f));
 
-	//add gravity
-	rb.addForce(g);
+	//rb.addForce(g);
+
+	//output inverted inertia matrix
+	std::cout << "Inverted Inertia Matrix" << std::endl;
+	std::cout << glm::to_string(rb.getInvInertia()) << std::endl;
+
+	//set positon and force of impulse
+	glm::vec3 ipos(1.0f, 4.0f, 0.0f);
+	glm::vec3 impulse(-4.0f, 0.0f, 0.0f);
+	//bool to know if impulse has been applied
+	bool applied = false;
 
 	double startt = t;
 
@@ -133,114 +121,42 @@ int main()
 		{
 			// Manage interaction
 			app.doMovement(dt);
-			glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
 
-
-			/*
-			**	SIMULATION
-			*/
-			//declare variaible for amount rb is below the plane
-			float newY = 0;
-			//declare variable to hold points of collision
-			std::vector<glm::vec3> collisions;
-			//loop throught vertices
-			for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
 			{
-				//translate vertices into worldspace
-				glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
-				//chack if vertices are below the plane
-				if (worldspace.y <= plane.getPos().y)
+				///
+
+				glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
+
+				//intergration rotation
+				rb.setAngVel(rb.getAngVel() + dt * rb.getAngAcc());
+				glm::mat3 angVelSkew = glm::matrixCross3(rb.getAngVel());
+				glm::mat3 R = glm::mat3(rb.getRotate());
+				R += dt*angVelSkew * R;
+				R = glm::orthonormalize(R);
+				rb.setRotate(R);
+
+				///
+
+				//total Force/mass
+				glm::vec3 F = rb.applyForces(rb.getPos(), rb.getVel(), t, dt);
+
+				//sett acceleration
+				rb.setAcc(F);
+
+				//semi implicit Eular
+				rb.setVel(rb.getVel() + dt * rb.getAcc());
+				rb.setPos(rb.getPos() + dt * rb.getVel());
+
+				//check if it's been 2 seconds
+				if (t >= 2 && !applied)
 				{
-					//set newY to largest distance below plane
-					if (plane.getPos().y - worldspace.y > newY)
-						newY = plane.getPos().y - worldspace.y;
-					//add vertex to collisions
-					collisions.push_back(glm::vec3(worldspace));
+					//apply impulse
+					applyImpulse(impulse, ipos, rb);
+					//set applied to true
+					applied = true;
 				}
 
 			}
-			//check if rb has collided with plane
-			if (collisions.size() > 0)
-			{
-				//translate object up to be on plane
-				rb.setPos(1, rb.getPos().y + newY);
-				//declare average
-				glm::vec3 average;
-				//loop through collisions
-				for (glm::vec3 c : collisions)
-				{
-					//translate collisions y up to when object would be on plane
-					c.y += newY;
-					//add collision to average
-					average += c;
-				}
-				//divide average by amount of collisions
-				average = average / collisions.size();
-
-				//set normal to be plane normal
-				glm::vec3 normal(0.0f, 1.0f, 0.0f);
-				//set r to be vector from center of mass to impulse
-				glm::vec3 r = average - rb.getPos();
-
-				//set vr
-				glm::vec3 vr = (rb.getVel() + glm::cross(rb.getAngVel(), r));
-				//set vt
-				glm::vec3 vt = vr - glm::dot(vr, normal) * normal;
-
-				//calculate numerator of impulse equation
-				float numerator = -(1 + rb.getCor()) * glm::dot(vr, normal);
-				//calculate denominator of impulse equation
-				float denominator = pow(rb.getMass(), -1) + glm::dot(normal, glm::cross(ininertia * glm::cross(r, normal), r));
-
-				//divide numerator by denominator to get impulse
-				float impulse = (numerator / denominator);
-
-				//apply calculated impulse
-				applyImpulse(impulse, average, rb, normal);
-
-				//declare frcition impulse
-				glm::vec3 frictionimpulse;
-
-				//check that velocity isn't zero
-				if (vt != glm::vec3(0.0f))
-				{
-					//set friction impulse
-					frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
-					//angular energy loss to make object stop rotating
-					rb.setAngVel(rb.getAngVel() * 0.9);
-				}
-				else
-				{
-					//if velocity is zero set friction impulse to 0
-					frictionimpulse = glm::vec3(0.0f);
-				}
-
-				//apply friction impulse
-				applyImpulse(frictionimpulse, average, rb);
-
-			}
-			///
-
-			//intergration rotation
-			rb.setAngVel(rb.getAngVel() + dt * rb.getAngAcc());
-			glm::mat3 angVelSkew = glm::matrixCross3(rb.getAngVel());
-			glm::mat3 R = glm::mat3(rb.getRotate());
-			R += dt*angVelSkew * R;
-			R = glm::orthonormalize(R);
-			rb.setRotate(R);
-
-			///
-
-			//total Force/mass
-			glm::vec3 F = rb.applyForces(rb.getPos(), rb.getVel(), t, dt);
-
-			//sett acceleration
-			rb.setAcc(F);
-
-			//semi implicit Eular
-			rb.setVel(rb.getVel() + dt * rb.getAcc());
-			rb.setPos(rb.getPos() + dt * rb.getVel());
-
 
 
 
@@ -249,14 +165,13 @@ int main()
 			accumulator -= dt;
 			t += dt;
 		}
-
 		/*
 		**	RENDER
 		*/
 		// clear buffer
 		app.clear();
 		// draw ground plane
-		app.draw(plane);
+		//app.draw(plane);
 		// draw rigidbody
 		app.draw(rb.getMesh());
 		app.display();

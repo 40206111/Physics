@@ -42,13 +42,20 @@ void outVec3(glm::vec3 v)
 	std::cout << v.x << ",\t" << v.y << ",\t" << v.z << std::endl;
 }
 
+//apply impulse method
 void applyImpulse(float impulse, glm::vec3 ipos, RigidBody &rb, glm::vec3 normal)
 {
+	//calculate inverse inertia with rotation
 	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
+	//calculate change in velocity
 	glm::vec3 deltav = (impulse / rb.getMass()) * normal;
+	//set new velociy
 	rb.setVel(rb.getVel() + deltav);
+	//calculate vector from center of mass to impulse position
 	glm::vec3 r = ipos - rb.getPos();
+	//calaulte change in angular velocity
 	glm::vec3 deltaomega = impulse * ininertia * glm::cross(r, normal);
+	//set new angular velocity
 	rb.setAngVel(rb.getAngVel() + deltaomega);
 
 }
@@ -116,40 +123,61 @@ int main()
 			/*
 			**	SIMULATION
 			*/
+			//declare variable for amount object is below planes
 			float newY = 0;
+			//declare vector of collisions
 			std::vector<glm::vec3> collisions;
+			//loop through vertices
 			for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
 			{
+				//translate vertex into world space
 				glm::vec4 worldspace = rb.getMesh().getModel() * glm::vec4(glm::vec3(rb.getMesh().getVertices()[i].getCoord()), 1.0f);
+				//check if vertex is below plane
 				if (worldspace.y <= plane.getPos().y)
 				{
+					//set largest distance below plane to newY
 					if (plane.getPos().y - worldspace.y > newY)
 						newY = plane.getPos().y - worldspace.y;
+					//add vertex to collisions
 					collisions.push_back(glm::vec3(worldspace));
 				}
 
 			}
+			//chack if collided
 			if (collisions.size() > 0)
 			{
+				//set position to be on plane
 				rb.setPos(1, rb.getPos().y + newY);
+				//declare average
 				glm::vec3 average;
+				//loop through collisions
 				for (glm::vec3 c : collisions)
 				{
+					//set y position to be when object is on plane
 					c.y += newY;
+					//add collision to average
 					average += c;
 				}
+				//calculate average
 				average = average / collisions.size();
 
+				//set normal to plane normal
 				glm::vec3 normal(0.0f, 1.0f, 0.0f);
+				//set r to vector from center of mass to impulse position
 				glm::vec3 r = average - rb.getPos();
 
+				//calculate vr
 				glm::vec3 vr = (rb.getVel() + glm::cross(rb.getAngVel(), r));
 
+				//calculate numerator for impulse
 				float numerator = -(1 + rb.getCor()) * glm::dot(vr, normal);
+				//calculate denominator for impulse
 				float denominator = pow(rb.getMass(), -1) + glm::dot(normal, glm::cross(ininertia * glm::cross(r, normal), r));
 
+				//calulate impulse
 				float impulse = (numerator / denominator);
 				
+				//apply impulse
 				applyImpulse(impulse, average, rb, normal);
 
 			}
