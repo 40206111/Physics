@@ -43,10 +43,11 @@ void outVec3(glm::vec3 v)
 
 void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
 {
+	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
 	glm::vec3 deltav = impulse / rb.getMass();
 	rb.setVel(rb.getVel() + deltav);
 	glm::vec3 r = ipos - rb.getPos();
-	glm::vec3 deltaomega = rb.getInvInertia() * glm::cross(r, impulse);
+	glm::vec3 deltaomega = ininertia * glm::cross(r, impulse);
 	rb.setAngVel(rb.getAngVel() + deltaomega);
 
 }
