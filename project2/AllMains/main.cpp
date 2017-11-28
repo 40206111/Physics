@@ -242,9 +242,6 @@ int main()
 			rb.setPos(rb.getPos() + dt * rb.getVel());
 
 
-
-
-
 			//accumulate
 			accumulator -= dt;
 			t += dt;
