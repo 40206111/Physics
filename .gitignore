@@ -641,9 +641,6 @@ project2/project2/glew/LICENSE.txt
 project2/project2/Shader.h
 project2/project2/OBJLoader.h
 project2/project2/OBJLoader.cpp
-project2/project2/Camera.h
-project2/project2/Application.h
-project2/project2/Application.cpp
 project1/1. particle animations/soil/include/SOIL2/stbi_DDS_c.h
 project1/1. particle animations/soil/include/SOIL2/stbi_DDS.h
 project1/1. particle animations/soil/include/SOIL2/stb_image_write.h
@@ -1854,8 +1851,6 @@ project1/1. particle animations/glew/LICENSE.txt
 project1/1. particle animations/Shader.h
 project1/1. particle animations/OBJLoader.h
 project1/1. particle animations/OBJLoader.cpp
-project1/1. particle animations/Mesh.h
-project1/1. particle animations/Mesh.cpp
 project2/project2/glm/glm/gtx/associated_min_max.inl
 project2/project2/glm/glm/gtx/associated_min_max.hpp
 project2/project2/glm/glm/gtc/vec1.inl
