@@ -2643,3 +2643,5 @@ project2/project2/glfw/lib-vc2015/glfw3.lib
 project2/project2/glfw/lib-vc2015/glfw3.dll
 project2/project2/glfw/lib-mingw/glfw3.dll
 project2/project2/glfw/lib-vc2013/glfw3.lib
+project1/1. particle animations/Mesh.h
+project1/1. particle animations/Mesh.cpp
