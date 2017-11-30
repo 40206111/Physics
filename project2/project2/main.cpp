@@ -29,7 +29,7 @@
 // time
 float t = 0.0f;
 const float dt = 0.01f;
-float timeMultiplier = 2.0; // controls the speed of the simulation
+float timeMultiplier = 1.0; // controls the speed of the simulation
 
 // forces
 Gravity g = Gravity(glm::vec3(0.0f, -9.8f, 0.0f));
@@ -101,11 +101,11 @@ int main()
 	Mesh plane = Mesh::Mesh(Mesh::QUAD);
 	//Mesh plane = Mesh::Mesh("resources/models/plane10.obj");
 	plane.setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
-	plane.scale(glm::vec3(20.0f, 20.0f, 20.0f));
+	plane.scale(glm::vec3(10.0f, 10.0f, 10.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
-		
-	// rigid body set up
-	RigidBody rb1 = RigidBody();
+	int rbAmount = 50;
+	std::vector<RigidBody> rb(rbAmount);
+	Application::pauseSimulation = true;
 	
 	// create sphere from obj
 	//Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
@@ -121,16 +121,21 @@ int main()
 	
 	// create cube
 	Mesh m1 = Mesh::Mesh(Mesh::CUBE);
-
-	rb1.setMesh(m1);
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
-	rb1.getMesh().setShader(rbShader);
-	rb1.setMass(1.0f);
-	rb1.translate(glm::vec3(5.0f, 0.1f, 0.0f));
-	rb1.setVel(glm::vec3(-1.0f, 0.0f, 0.0f));
-	rb1.setAngVel(glm::vec3(0.5f, .5f, 0.0f));
-	// add forces to Rigid body
-	rb1.addForce(&g);
+
+	for (int i = 0; i < rbAmount; i++)
+	{
+		// rigid body set up
+		rb[i] = RigidBody();
+		rb[i].setMesh(m1);
+		rb[i].getMesh().setShader(rbShader);
+		rb[i].setMass(1.0f);
+		rb[i].setPos(glm::vec3((-rbAmount/2) + i, 0.0f + sin((i/2)) * 2, 0.0f));
+		rb[i].setVel(glm::vec3(5.0f, 10.0f, 0.0f));
+		rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
+		// add forces to Rigid body
+		rb[i].addForce(&g);
+	}
 
 	// time
 	float currentTime = (float)glfwGetTime();
@@ -151,104 +156,26 @@ int main()
 		while (timeAccumulator >= dt) {
 			// Manage interaction
 			app.doMovement(dt);
-			glm::mat3 ininertia = glm::mat3(rb1.getRotate()) * rb1.getInvInertia() * glm::mat3(glm::transpose(rb1.getRotate()));
 
 			/*
 			**	SIMULATION
 			*/
+
 			if (!Application::pauseSimulation) {
-				
-				
-				//declare variaible for amount rb is below the plane
-				float newY = 0;
-				//declare variable to hold points of collision
-				std::vector<glm::vec3> collisions;
-
-				//loop throught vertices
-				for (int i = 0; i < rb1.getMesh().getVertices().size(); i++)
+				for (int i = 0; i < rbAmount; i++)
 				{
-					//translate vertices into worldspace
-					glm::vec4 worldspace = rb1.getMesh().getModel() * glm::vec4(glm::vec3(rb1.getMesh().getVertices()[i].getCoord()), 1.0f);
-					//chack if vertices are below the plane
-					if (worldspace.y <= plane.getPos().y)
-					{
-						//set newY to largest distance below plane
-						if (plane.getPos().y - worldspace.y > newY)
-							newY = plane.getPos().y - worldspace.y;
-						//add vertex to collisions
-						collisions.push_back(glm::vec3(worldspace));
-					}
-
+					glm::mat3 ininertia = glm::mat3(rb[i].getRotate()) * rb[i].getInvInertia() * glm::mat3(glm::transpose(rb[i].getRotate()));
 				}
-				//check if rb has collided with plane
-				if (collisions.size() > 0)
-				{
-					//translate object up to be on plane
-					rb1.setPos(1, rb1.getPos().y + newY);
-					//declare average
-					glm::vec3 average;
-					//loop through collisions
-					for (glm::vec3 c : collisions)
-					{
-						//translate collisions y up to when object would be on plane
-						c.y += newY;
-						//add collision to average
-						average += c;
-					}
-					//divide average by amount of collisions
-					average = average / collisions.size();
 
-					//set normal to be plane normal
-					glm::vec3 normal(0.0f, 1.0f, 0.0f);
-					//set r to be vector from center of mass to impulse
-					glm::vec3 r = average - rb1.getPos();
+				for (int i = 0; i < rbAmount; i++) {
+					// integration (rotation)
+					integrateRot(rb[i], dt);
 
-					//set vr
-					glm::vec3 vr = (rb1.getVel() + glm::cross(rb1.getAngVel(), r));
-					//set vt
-					glm::vec3 vt = vr - glm::dot(vr, normal) * normal;
-
-					//calculate numerator of impulse equation
-					float numerator = -(1 + rb1.getCor()) * glm::dot(vr, normal);
-					//calculate denominator of impulse equation
-					float denominator = pow(rb1.getMass(), -1) + glm::dot(normal, glm::cross(ininertia * glm::cross(r, normal), r));
-
-					//divide numerator by denominator to get impulse
-					float impulse = (numerator / denominator);
-
-					//apply calculated impulse
-					applyImpulse(impulse, average, rb1, normal);
-
-					//declare frcition impulse
-					glm::vec3 frictionimpulse;
-
-					//check that velocity isn't zero
-					if (vt != glm::vec3(0.0f))
-					{
-						//set friction impulse
-						frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
-						//angular energy loss to make object stop rotating
-						rb1.setAngVel(rb1.getAngVel() *  0.9);
-					}
-					else
-					{
-						//if velocity is zero set friction impulse to 0
-						frictionimpulse = glm::vec3(0.0f);
-					}
-
-					//apply friction impulse
-					applyImpulse(frictionimpulse, average, rb1);
-
+					//Integration (position)
+					integratePos(rb[i], t, dt);
 				}
-				///	
+
 			}
-			// integration (rotation)
-			integrateRot(rb1, dt);
-
-			///
-
-			//Integration (position)
-			integratePos(rb1, t, dt);
 
 			timeAccumulator -= dt;
 			t += dt;
@@ -263,8 +190,11 @@ int main()
 		// draw groud plane
 		app.draw(plane);		
 		
-		// draw rigid body
-		app.draw(rb1.getMesh());
+		for (int i = 0; i < rbAmount; i++)
+		{
+			// draw rigid body
+			app.draw(rb[i].getMesh());
+		}
 
 		app.display();
 	}
