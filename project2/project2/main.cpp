@@ -89,6 +89,14 @@ void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
 	rb.setAngVel(rb.getAngVel() + deltaomega);
 }
 
+void checkColide(RigidBody &rb)
+{
+	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
+	for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
+	{
+	}
+}
+
 // main function
 int main()
 {
@@ -111,7 +119,7 @@ int main()
 	//Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
 
 	// create cube from obj
-	//Mesh m1 = Mesh::Mesh("resources/models/cube1.obj");
+	Mesh m1 = Mesh::Mesh("resources/models/cube1.obj");
 
 	// load triangle
 	//Mesh m1 = Mesh::Mesh(Mesh::TRIANGLE);
@@ -120,7 +128,7 @@ int main()
 	//Mesh m1 = Mesh::Mesh(Mesh::QUAD);
 	
 	// create cube
-	Mesh m1 = Mesh::Mesh(Mesh::CUBE);
+	//Mesh m1 = Mesh::Mesh(Mesh::CUBE);
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
 
 	for (int i = 0; i < rbAmount; i++)
@@ -164,7 +172,7 @@ int main()
 			if (!Application::pauseSimulation) {
 				for (int i = 0; i < rbAmount; i++)
 				{
-					glm::mat3 ininertia = glm::mat3(rb[i].getRotate()) * rb[i].getInvInertia() * glm::mat3(glm::transpose(rb[i].getRotate()));
+					checkColide(rb[i]);
 				}
 
 				for (int i = 0; i < rbAmount; i++) {
