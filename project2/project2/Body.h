@@ -7,6 +7,7 @@
 #include <vector>
 #include "Mesh.h"
 #include "Force.h"
+#include "Collider.h"
 
 class Body
 {
@@ -36,6 +37,11 @@ public:
 	//force
 	std::vector<Force*> getForces() { return m_forces; }
 	void addForce(Force *f) { m_forces.push_back(f); }
+	
+	//collider
+	Collider* getCollider() { return m_collider; }
+	void setCollider(Collider *c) { m_collider = c; }
+
 	//sum all forces applied to a body and return acceleration
 	glm::vec3 applyForces(glm::vec3 x, glm::vec3 v, double t, float dt)
 	{
@@ -79,6 +85,7 @@ private:
 	float m_cor;
 
 	std::vector<Force*> m_forces;
+	Collider* m_collider;
 	glm::vec3 m_acc;
 	glm::vec3 m_vel;
 	glm::vec3 m_pos;

@@ -17,6 +17,7 @@ RigidBody::~RigidBody()
 void RigidBody::InInertia()
 {
 	float twelthmass = (1.0f / 12.0f)*this->getMass();
+
 	float w2 = pow(this->getScale()[0][0], 2);
 	float h2 = pow(this->getScale()[1][1], 2);
 	float d2 = pow(this->getScale()[2][2], 2);
