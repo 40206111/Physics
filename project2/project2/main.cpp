@@ -89,11 +89,15 @@ void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
 	rb.setAngVel(rb.getAngVel() + deltaomega);
 }
 
-void checkColide(RigidBody &rb)
+void checkColide(RigidBody &rb, Body &plane)
 {
 	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
-	for (int i = 0; i < rb.getMesh().getVertices().size(); i++)
+
+	glm::vec3 collide = rb.getCollider()->testCollision(&rb, &plane, plane.getCollider());
+
+	if (collide != glm::vec3(NULL))
 	{
+		Application::pauseSimulation = true;
 	}
 }
 
@@ -106,11 +110,14 @@ int main()
 	Application::camera.setCameraPosition(glm::vec3(0.0f, 3.0f, 20.0f));
 
 	// create environment ( large plane at y=-3)
-	Mesh plane = Mesh::Mesh(Mesh::QUAD);
+	Mesh p = Mesh::Mesh(Mesh::QUAD);
+	RigidBody plane = RigidBody();
+	plane.setMesh(p);
 	//Mesh plane = Mesh::Mesh("resources/models/plane10.obj");
-	plane.setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
+	plane.getMesh().setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
 	plane.scale(glm::vec3(10.0f, 10.0f, 10.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
+	plane.setCollider(new OBB(&plane));
 	int rbAmount = 1;
 	std::vector<RigidBody> rb(rbAmount);
 	Application::pauseSimulation = true;
@@ -143,7 +150,7 @@ int main()
 		rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 		// add forces to Rigid body
 		rb[i].addForce(&g);
-		rb[i].setCollider(new OBB(&rb[i]));
+		rb[i].setCollider(new Sphere(&rb[i]));
 	}
 
 	// time
@@ -173,9 +180,8 @@ int main()
 			if (!Application::pauseSimulation) {
 				for (int i = 0; i < rbAmount; i++)
 				{
-					//checkColide(rb[i]);
+					checkColide(rb[i], plane);
 				}
-
 				for (int i = 0; i < rbAmount; i++) {
 					// integration (rotation)
 					integrateRot(rb[i], dt);
@@ -197,7 +203,7 @@ int main()
 		app.clear();
 		
 		// draw groud plane
-		app.draw(plane);		
+		app.draw(plane.getMesh());		
 		
 		for (int i = 0; i < rbAmount; i++)
 		{
