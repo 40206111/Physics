@@ -9,7 +9,7 @@ public:
 	Collider() {}
 	~Collider() {}
 
-	virtual glm::vec3 testCollision(Body* b1, Body* b2, Collider* other);
+	virtual glm::vec3 testCollision(Body* b1, Body* b2);
 };
 
 class OBB : public Collider
@@ -18,7 +18,8 @@ public:
 	OBB() {}
 	OBB(Body* b);
 
-	glm::vec3 testCollision(Body* b, Body* other);
+	glm::vec3 testCollision(Body* b1, Body* b2);
+	glm::vec3 testCollision(Body* b1, Body* b2, OBB* other);
 
 private:
 	glm::vec3 center;
@@ -32,8 +33,9 @@ public:
 	Sphere() {}
 	Sphere(Body* b);
 
+	glm::vec3 testCollision(Body* b1, Body* b2);
 	glm::vec3 testCollision(Body* b1, Body* b2, Sphere* other);
-	glm::vec3 testCollision(Body* b1, Body* b2, Collider* other);
+	glm::vec3 testCollision(Body* b1, Body* b2, OBB* other);
 
 private:
 	glm::vec3 center;
