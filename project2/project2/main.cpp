@@ -93,11 +93,23 @@ void checkColide(RigidBody &rb, Body &plane)
 {
 	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
 
-	glm::vec3 collide = rb.getCollider()->testCollision(&rb, &plane, plane.getCollider());
+	glm::vec3 collide = rb.getCollider()->testCollision(&rb, &plane);
 
 	if (collide != glm::vec3(NULL))
 	{
-		Application::pauseSimulation = true;
+		rb.setPos(1, -2);
+		glm::vec3 normal(0.0f, 1.0f, 0.0f);
+		glm::vec3 r = collide - rb.getPos();
+
+		glm::vec3 vr = (rb.getVel() + glm::cross(rb.getAngVel(), r));
+		glm::vec3 vt = vr - glm::dot(vr, normal) * normal;
+
+		float numerator = -(1 + rb.getCor()) * glm::dot(vr, normal);
+
+		float denominator = pow(rb.getMass(), -1) + glm::dot(normal, glm::cross(ininertia * glm::cross(r, normal), r));
+		float impulse = (numerator / denominator);
+
+		applyImpulse(impulse, collide, rb, normal);
 	}
 }
 
@@ -146,8 +158,9 @@ int main()
 		rb[i].getMesh().setShader(rbShader);
 		rb[i].setMass(1.0f);
 		rb[i].setPos(glm::vec3((-rbAmount/2) + i, 0.0f + sin((i/2)) * 2, 0.0f));
-		rb[i].setVel(glm::vec3(5.0f, 10.0f, 0.0f));
+		rb[i].setVel(glm::vec3(1.0f, 10.0f, 0.0f));
 		rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
+		rb[i].setCor(1.0f);
 		// add forces to Rigid body
 		rb[i].addForce(&g);
 		rb[i].setCollider(new Sphere(&rb[i]));
