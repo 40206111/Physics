@@ -89,7 +89,7 @@ void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
 	rb.setAngVel(rb.getAngVel() + deltaomega);
 }
 
-void checkColide(RigidBody &rb, Body &plane)
+void checkColide(RigidBody &rb, Body &plane, std::vector<RigidBody> others, int current)
 {
 	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
 
@@ -110,6 +110,35 @@ void checkColide(RigidBody &rb, Body &plane)
 		float impulse = (numerator / denominator);
 
 		applyImpulse(impulse, collide, rb, normal);
+
+		/*glm::vec3 frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
+
+		applyImpulse(frictionimpulse, collide, rb);*/
+	}
+
+	for (int i = current + 1; i < others.size(); i++)
+	{
+		collide = rb.getCollider()->testCollision(&rb, &others[i]);
+
+		if (collide != glm::vec3(NULL))
+		{
+			glm::vec3 normal(0.0f, 1.0f, 0.0f);
+			glm::vec3 r = collide - rb.getPos();
+
+			glm::vec3 vr = (rb.getVel() + glm::cross(rb.getAngVel(), r));
+			glm::vec3 vt = vr - glm::dot(vr, normal) * normal;
+
+			float numerator = -(1 + rb.getCor()) * glm::dot(vr, normal);
+
+			float denominator = pow(rb.getMass(), -1) + glm::dot(normal, glm::cross(ininertia * glm::cross(r, normal), r));
+			float impulse = (numerator / denominator);
+
+			applyImpulse(impulse, collide, rb, normal);
+
+			/*glm::vec3 frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
+
+			applyImpulse(frictionimpulse, collide, rb);*/
+		}
 	}
 }
 
@@ -130,10 +159,10 @@ int main()
 	plane.scale(glm::vec3(10.0f, 10.0f, 10.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
 	plane.setCollider(new OBB(&plane));
-	int rbAmount = 1;
+	int rbAmount = 2;
 	std::vector<RigidBody> rb(rbAmount);
 	Application::pauseSimulation = true;
-	
+
 	// create sphere from obj
 	Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
 
@@ -142,10 +171,10 @@ int main()
 
 	// load triangle
 	//Mesh m1 = Mesh::Mesh(Mesh::TRIANGLE);
-	
+
 	// load quad
 	//Mesh m1 = Mesh::Mesh(Mesh::QUAD);
-	
+
 	// create cube
 	//Mesh m1 = Mesh::Mesh(Mesh::CUBE);
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
@@ -157,7 +186,7 @@ int main()
 		rb[i].setMesh(m1);
 		rb[i].getMesh().setShader(rbShader);
 		rb[i].setMass(1.0f);
-		rb[i].setPos(glm::vec3((-rbAmount/2) + i, 0.0f + sin((i/2)) * 2, 0.0f));
+		rb[i].setPos(glm::vec3(0.0f, 0.0f + 2 * i, 0.0f));
 		rb[i].setVel(glm::vec3(1.0f, 10.0f, 0.0f));
 		rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 		rb[i].setCor(1.0f);
@@ -180,7 +209,7 @@ int main()
 		currentTime = newTime;
 		timeAccumulator += frameTime;
 		timeAccumulator *= timeMultiplier;
-	
+
 
 		while (timeAccumulator >= dt) {
 			// Manage interaction
@@ -191,9 +220,10 @@ int main()
 			*/
 
 			if (!Application::pauseSimulation) {
+				std::vector<RigidBody> bodies = rb;
 				for (int i = 0; i < rbAmount; i++)
 				{
-					checkColide(rb[i], plane);
+					checkColide(rb[i], plane, bodies, i);
 				}
 				for (int i = 0; i < rbAmount; i++) {
 					// integration (rotation)
@@ -210,14 +240,14 @@ int main()
 		}
 
 		/*
-		**	RENDER 
-		*/		
+		**	RENDER
+		*/
 		// clear buffer
 		app.clear();
-		
+
 		// draw groud plane
-		app.draw(plane.getMesh());		
-		
+		app.draw(plane.getMesh());
+
 		for (int i = 0; i < rbAmount; i++)
 		{
 			// draw rigid body
