@@ -181,7 +181,7 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2, Sphere* other)
 	if (glm::length(bothC) < totalR)
 	{ 
 		b1->setPos(b1->getPos() - (glm::normalize(bothC) * (totalR - glm::length(bothC))));
-		return glm::vec3(glm::normalize(bothC) * this->radius);
+		return glm::vec3(worldC + (glm::normalize(bothC) * this->radius));
 	}
 	else
 	{
@@ -194,11 +194,12 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2, OBB* other)
 	glm::vec3 worldC = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->center, 1.0f));
 	glm::vec3 yAxis(0.0f, 1.0f, 0.0f);
 
-	float distance= glm::dot(worldC, yAxis);
+	float distance= glm::dot(worldC - b2->getPos(), yAxis);
 
-	if (distance - b2->getPos().y< this->radius)
+	if (distance< this->radius)
 	{
-		return glm::vec3(b1->getPos().x, b2->getPos().y, b1->getPos().z);
+		b1->setPos(1, b2->getPos().y + this->radius);
+		return glm::vec3(worldC - distance * yAxis);
 	}
 	else
 	{

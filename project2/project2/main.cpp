@@ -97,7 +97,6 @@ void checkColide(RigidBody &rb, Body &plane, std::vector<RigidBody> others, int 
 
 	if (collide != glm::vec3(NULL))
 	{
-		rb.setPos(1, -2);
 		glm::vec3 normal(0.0f, 1.0f, 0.0f);
 		glm::vec3 r = collide - rb.getPos();
 
@@ -135,9 +134,9 @@ void checkColide(RigidBody &rb, Body &plane, std::vector<RigidBody> others, int 
 
 			applyImpulse(impulse, collide, rb, normal);
 
-			/*glm::vec3 frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
+			//glm::vec3 frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
 
-			applyImpulse(frictionimpulse, collide, rb);*/
+			//applyImpulse(frictionimpulse, collide, rb);
 		}
 	}
 }
