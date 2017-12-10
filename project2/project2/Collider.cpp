@@ -9,6 +9,10 @@ glm::vec3 Collider::testCollision(Body* b1, Body* b2)
 	return glm::vec3(NULL);
 }
 
+glm::vec3 Collider::planeCollision(Body* b1, Body* b2)
+{
+	return glm::vec3(NULL);
+}
 
 ///OBB///
 OBB::OBB(Body* b)
@@ -177,11 +181,22 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2, Sphere* other)
 	glm::vec3 worldCOther = glm::vec3(b2->getMesh().getModel() * glm::vec4(other->center, 1.0f));
 	glm::vec3 bothC = worldCOther - worldC;
 	float totalR = this->radius + other->radius;
+	float centerLen = glm::length(bothC);
+	glm::vec3 normal = normalize(bothC);
 
-	if (glm::length(bothC) < totalR)
+	if (centerLen < totalR)
 	{ 
-		b1->setPos(b1->getPos() - (glm::normalize(bothC) * (totalR - glm::length(bothC))));
-		return glm::vec3(worldC + (glm::normalize(bothC) * this->radius));
+		if (worldC.y > worldCOther.y)
+		{
+			b1->setPos(b1->getPos() + (normal * (totalR - centerLen)));
+		}
+		else
+		{
+			b2->setPos(b2->getPos() + (normal * (totalR - centerLen)));
+		}
+		this->setNormal(-normal);
+		other->setNormal(normal);
+		return glm::vec3(worldC + (normal * this->radius));
 	}
 	else
 	{
@@ -191,14 +206,19 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2, Sphere* other)
 
 glm::vec3 Sphere::testCollision(Body* b1, Body* b2, OBB* other)
 {
+	return glm::vec3(NULL);
+}
+
+glm::vec3 Sphere::planeCollision(Body* b1, Body* plane)
+{
 	glm::vec3 worldC = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->center, 1.0f));
 	glm::vec3 yAxis(0.0f, 1.0f, 0.0f);
 
-	float distance= glm::dot(worldC - b2->getPos(), yAxis);
+	float distance = glm::dot(worldC - plane->getPos(), yAxis);
 
 	if (distance< this->radius)
 	{
-		b1->setPos(1, b2->getPos().y + this->radius);
+		b1->setPos(1, plane->getPos().y + this->radius);
 		return glm::vec3(worldC - distance * yAxis);
 	}
 	else
