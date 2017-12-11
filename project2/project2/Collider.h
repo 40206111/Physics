@@ -26,6 +26,7 @@ public:
 
 	glm::vec3 testCollision(Body* b1, Body* b2);
 	glm::vec3 testCollision(Body* b1, Body* b2, OBB* other);
+	glm::vec3 planeCollision(Body* b1, Body* plane);
 
 private:
 	glm::vec3 center;

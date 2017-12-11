@@ -7,6 +7,8 @@ public:
 	RigidBody();
 	~RigidBody();
 
+	bool paused = false;
+	float time = 0.0f;
 	void setAngVel(const glm::vec3 &omega) { m_angVel = omega; }
 	void setAngAccl(const glm::vec3 &alpha) { m_angAcc = alpha; }
 	void setInertia(const glm::mat3 &invInertia) { m_invInertia = invInertia; }

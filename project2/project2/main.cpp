@@ -89,7 +89,7 @@ void applyImpulse(glm::vec3 impulse, glm::vec3 ipos, RigidBody &rb)
 	rb.setAngVel(rb.getAngVel() + deltaomega);
 }
 
-void calculateImpulse(RigidBody rb, glm::vec3 normal, glm::vec3 collide)
+void calculateImpulse(RigidBody &rb, glm::vec3 normal, glm::vec3 collide)
 {
 	glm::mat3 ininertia = glm::mat3(rb.getRotate()) * rb.getInvInertia() * glm::mat3(glm::transpose(rb.getRotate()));
 
@@ -98,18 +98,25 @@ void calculateImpulse(RigidBody rb, glm::vec3 normal, glm::vec3 collide)
 	glm::vec3 vr = (rb.getVel() + glm::cross(rb.getAngVel(), r));
 	glm::vec3 vt = vr - glm::dot(vr, normal) * normal;
 
-	float numerator = -(1 + rb.getCor()) * glm::dot(vr, normal);
+	float numerator = -(1.0f + rb.getCor()) * glm::dot(vr, normal);
 
 	float denominator = pow(rb.getMass(), -1) + glm::dot(normal, glm::cross(ininertia * glm::cross(r, normal), r));
 	float impulse = (numerator / denominator);
-
 	applyImpulse(impulse, collide, rb, normal);
-	glm::vec3 frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
-	
-	applyImpulse(frictionimpulse, collide, rb);
+
+	//check that velocity isn't zero
+	if (vt != glm::vec3(0.0f))
+	{
+		//set friction impulse
+		glm::vec3 frictionimpulse = -0.1 * abs(impulse) * glm::normalize(vt);
+		//angular energy loss to make object stop rotating
+		rb.setAngVel(rb.getAngVel() *  0.9);
+		applyImpulse(frictionimpulse, collide, rb);
+		//rb.setVel(rb.getAngVel() *  0.99);
+	}
 }
 
-void checkColide(RigidBody &rb, Body &plane, std::vector<RigidBody> &others, int current, std::vector<Particle> &p)
+void checkColide(RigidBody &rb, Body &plane, std::vector<RigidBody> &others, int current)
 {
 
 	glm::vec3 collide = rb.getCollider()->planeCollision(&rb, &plane);
@@ -126,9 +133,15 @@ void checkColide(RigidBody &rb, Body &plane, std::vector<RigidBody> &others, int
 
 		if (collide != glm::vec3(NULL))
 		{
+			if (others[i].paused)
+			{
+				others[i].paused = false;
+			}
+			if (rb.paused)
+			{
+				rb.paused = false;
+			}
 			calculateImpulse(rb, rb.getCollider()->getNormal(), collide);
-			p[0].setPos(collide);
-			p[1].setPos(collide + rb.getCollider()->getNormal());
 			calculateImpulse(others[i], others[i].getCollider()->getNormal(), collide);
 		}
 	}
@@ -156,10 +169,10 @@ int main()
 	Application::pauseSimulation = true;
 
 	// create sphere from obj
-	Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
+	//Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
 
 	// create cube from obj
-	//Mesh m1 = Mesh::Mesh("resources/models/cube1.obj");
+	Mesh m1 = Mesh::Mesh("resources/models/cube1.obj");
 
 	// load triangle
 	//Mesh m1 = Mesh::Mesh(Mesh::TRIANGLE);
@@ -172,34 +185,23 @@ int main()
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
 	Shader other = Shader("resources/shaders/physics.vert", "resources/shaders/core_blue.frag");
 	Shader other2 = Shader("resources/shaders/physics.vert", "resources/shaders/core_green.frag");
-	std::vector<Particle> pa(2);
 	
-	pa[0] = Particle();
-	pa[0].setMesh(Mesh::QUAD);
-	pa[0].rotate((GLfloat)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
-	pa[0].scale(glm::vec3(0.1f));
-	pa[0].setPos(0, 2.0f);
-	pa[0].getMesh().setShader(other);
-
-	pa[1] = Particle();
-	pa[1].setMesh(Mesh::QUAD);
-	pa[1].rotate((GLfloat)M_PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
-	pa[1].scale(glm::vec3(0.1f));
-	pa[1].getMesh().setShader(other2);
-
 	for (int i = 0; i < rbAmount; i++)
 	{
 		// rigid body set up
 		rb[i] = RigidBody();
 		rb[i].setMesh(m1);
-		rb[i].getMesh().setShader(rbShader);
+		if (i%2)
+			rb[i].getMesh().setShader(rbShader);
+		else
+			rb[i].getMesh().setShader(other);
 		rb[i].setMass(1.0f);
-		rb[i].setPos(glm::vec3(-5.0f + 5 * i, 0.0f, 0.0f));
+		rb[i].setPos(glm::vec3(-4.0f + 5 * i, 0.0f, 0.0f));
 		rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 		rb[i].setCor(1.0f);
 		// add forces to Rigid body
 		rb[i].addForce(&g);
-		rb[i].setCollider(new Sphere(&rb[i]));
+		rb[i].setCollider(new OBB(&rb[i]));
 	}
 	rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
 	rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
@@ -231,14 +233,28 @@ int main()
 			if (!Application::pauseSimulation) {
 				for (int i = 0; i < rbAmount; i++)
 				{
-					checkColide(rb[i], plane, rb, i, pa);
+					checkColide(rb[i], plane, rb, i);
 				}
 				for (int i = 0; i < rbAmount; i++) {
-					// integration (rotation)
-					integrateRot(rb[i], dt);
+					if (!rb[i].paused)
+					{
+						// integration (rotation)
+						integrateRot(rb[i], dt);
 
-					//Integration (position)
-					integratePos(rb[i], t, dt);
+						//Integration (position)
+						integratePos(rb[i], t, dt);
+						if (glm::length2(rb[i].getVel()) < 0.1 && glm::length2(rb[i].getAngVel()) < 0.1)
+						{
+							if (rb[i].time == 0.0f)
+							{
+								rb[i].time = t;
+							}
+							else if (t - rb[i].time >= 10)
+							{
+								rb[i].paused = true;
+							}
+						}
+					}
 				}
 
 			}
@@ -260,8 +276,6 @@ int main()
 			// draw rigid body
 			app.draw(rb[i].getMesh());
 		}
-		app.draw(pa[0].getMesh());
-		app.draw(pa[1].getMesh());
 		app.display();
 	}
 

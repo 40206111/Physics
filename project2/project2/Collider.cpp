@@ -67,6 +67,8 @@ OBB::OBB(Body* b)
 	this->center.x = minx + hx;
 	this->center.y = miny + hy;
 	this->center.z = minz + hz;
+
+	this->localxyz = glm::vec3(minx, miny, minz);
 }
 
 glm::vec3 OBB::testCollision(Body* b1, Body* b2)
@@ -91,6 +93,28 @@ glm::vec3 OBB::testCollision(Body* b1, Body* b2)
 glm::vec3 OBB::testCollision(Body* b1, Body* b2, OBB* Collider)
 {
 	return glm::vec3(NULL);
+}
+
+glm::vec3 OBB::planeCollision(Body* b1, Body* plane)
+{
+	glm::vec3 worldC = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->center, 1.0f));
+
+	glm::vec3 n(0.0f, 1.0f, 0.0f);
+	//need xyz to be 3 vec3s to use this
+	float radius = 0.0f;
+
+	float distance = glm::dot(n, worldC) - plane->getPos().y;
+
+	if (abs(distance) <= radius)
+	{
+		b1->setPos(1, plane->getPos().y - radius);
+		//dunno how to find collision point yet
+		return glm::vec3(1.0f);
+	}
+	else
+	{
+		return glm::vec3(NULL);
+	}
 }
 
 ///Sphere///
