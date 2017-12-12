@@ -68,7 +68,10 @@ OBB::OBB(Body* b)
 	this->center.y = miny + hy;
 	this->center.z = minz + hz;
 
-	this->localxyz = glm::vec3(minx, miny, minz);
+	glm::vec3 temp(minx, miny, minz);
+	this->localxyz[0] = glm::vec3(1.0f, 0.0f, 0.0f);
+	this->localxyz[1] = glm::vec3(0.0f, 1.0f, 0.0f);
+	this->localxyz[2] = glm::vec3(0.0f, 0.0f, 1.0f);
 }
 
 glm::vec3 OBB::testCollision(Body* b1, Body* b2)
@@ -98,16 +101,22 @@ glm::vec3 OBB::testCollision(Body* b1, Body* b2, OBB* Collider)
 glm::vec3 OBB::planeCollision(Body* b1, Body* plane)
 {
 	glm::vec3 worldC = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->center, 1.0f));
+	glm::vec3 worldX = glm::vec3(b1->getMesh().getRotate() * glm::vec4(this->localxyz[0], 1.0f));
+	glm::vec3 worldY = glm::vec3(b1->getMesh().getRotate() * glm::vec4(this->localxyz[1], 1.0f));
+	glm::vec3 worldZ = glm::vec3(b1->getMesh().getRotate() * glm::vec4(this->localxyz[2], 1.0f));
 
 	glm::vec3 n(0.0f, 1.0f, 0.0f);
-	//need xyz to be 3 vec3s to use this
-	float radius = 0.0f;
+
+	float radius = 
+		this->halfEdgeLength.x * abs(glm::dot(n, worldX)) +
+		this->halfEdgeLength.y * abs(glm::dot(n, worldY)) +
+		this->halfEdgeLength.z * abs(glm::dot(n, worldZ));
 
 	float distance = glm::dot(n, worldC) - plane->getPos().y;
 
 	if (abs(distance) <= radius)
 	{
-		b1->setPos(1, plane->getPos().y - radius);
+		b1->setPos(1, plane->getPos().y + radius);
 		//dunno how to find collision point yet
 		return glm::vec3(1.0f);
 	}

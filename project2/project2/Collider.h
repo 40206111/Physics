@@ -30,7 +30,7 @@ public:
 
 private:
 	glm::vec3 center;
-	glm::vec3 localxyz;
+	glm::vec3 localxyz[3];
 	glm::vec3 halfEdgeLength;
 };
 

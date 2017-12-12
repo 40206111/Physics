@@ -164,7 +164,7 @@ int main()
 	plane.getMesh().setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
 	plane.scale(glm::vec3(10.0f, 10.0f, 10.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
-	int rbAmount = 2;
+	int rbAmount = 1;
 	std::vector<RigidBody> rb(rbAmount);
 	Application::pauseSimulation = true;
 
@@ -203,8 +203,8 @@ int main()
 		rb[i].addForce(&g);
 		rb[i].setCollider(new OBB(&rb[i]));
 	}
-	rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
-	rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
+	//rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
+	//rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
 
 	// time
 	float currentTime = (float)glfwGetTime();
