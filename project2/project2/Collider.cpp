@@ -209,7 +209,6 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2)
 
 glm::vec3 Sphere::testCollision(Body* b1, Body* b2, Sphere* other)
 {
-
 	glm::vec3 worldC = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->center, 1.0f));
 	glm::vec3 worldCOther = glm::vec3(b2->getMesh().getModel() * glm::vec4(other->center, 1.0f));
 	glm::vec3 bothC = worldCOther - worldC;
@@ -239,7 +238,42 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2, Sphere* other)
 
 glm::vec3 Sphere::testCollision(Body* b1, Body* b2, OBB* other)
 {
-	return glm::vec3(NULL);
+	glm::vec3 worldC = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->center, 1.0f));
+	glm::vec3 worldCOther = glm::vec3(b2->getMesh().getModel() * glm::vec4(other->getCenter(), 1.0f));
+	glm::vec3 worldX = glm::vec3(b2->getMesh().getRotate() * glm::vec4(other->getx(), 1.0f));
+	glm::vec3 worldY = glm::vec3(b2->getMesh().getRotate() * glm::vec4(other->gety(), 1.0f));
+	glm::vec3 worldZ = glm::vec3(b2->getMesh().getRotate() * glm::vec4(other->getz(), 1.0f));
+	glm::vec3 centers = worldCOther - worldC;
+	glm::vec3 n = glm::normalize(centers);
+	//n.y *= -1;
+
+	glm::vec3 projC = n * glm::dot(n, worldC);
+	glm::vec3 projCOther = n * glm::dot(n, worldCOther);
+
+	float radius =
+		other->gethel().x * abs(glm::dot(n, worldX)) +
+		other->gethel().y * abs(glm::dot(n, worldY)) +
+		other->gethel().z * abs(glm::dot(n, worldZ));
+
+	radius += this->radius;
+	float distance = glm::length(projCOther - projC);
+
+	if (radius >= distance)
+	{
+		if (worldC.y > worldCOther.y)
+		{
+			b1->setPos(b1->getPos() + (n * (radius - distance)));
+		}
+		else
+		{
+			b2->setPos(b2->getPos() + (n * (radius - distance)));
+		}
+		return glm::vec3(worldC + (n * this->radius));
+	}
+	else
+	{
+		return glm::vec3(NULL);
+	}
 }
 
 glm::vec3 Sphere::planeCollision(Body* b1, Body* plane)

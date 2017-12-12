@@ -164,15 +164,15 @@ int main()
 	plane.getMesh().setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
 	plane.scale(glm::vec3(10.0f, 10.0f, 10.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
-	int rbAmount = 1;
+	int rbAmount = 2;
 	std::vector<RigidBody> rb(rbAmount);
 	Application::pauseSimulation = true;
 
 	// create sphere from obj
-	//Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
+	Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
 
 	// create cube from obj
-	Mesh m1 = Mesh::Mesh("resources/models/cube1.obj");
+	Mesh m2 = Mesh::Mesh("resources/models/cube1.obj");
 
 	// load triangle
 	//Mesh m1 = Mesh::Mesh(Mesh::TRIANGLE);
@@ -190,21 +190,27 @@ int main()
 	{
 		// rigid body set up
 		rb[i] = RigidBody();
-		rb[i].setMesh(m1);
-		if (i%2)
+		if (i % 2)
+		{
+			rb[i].setMesh(m2);
 			rb[i].getMesh().setShader(rbShader);
+			rb[i].setCollider(new OBB(&rb[i]));
+		}
 		else
-			rb[i].getMesh().setShader(other);
+		{
+			rb[i].setMesh(m1);
+			rb[i].getMesh().setShader(rbShader);
+			rb[i].setCollider(new Sphere(&rb[i]));
+		}
 		rb[i].setMass(1.0f);
 		rb[i].setPos(glm::vec3(-4.0f + 5 * i, 0.0f, 0.0f));
 		rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
 		rb[i].setCor(1.0f);
 		// add forces to Rigid body
-		rb[i].addForce(&g);
-		rb[i].setCollider(new OBB(&rb[i]));
+		//rb[i].addForce(&g);
 	}
-	//rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
-	//rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
+	rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
+	rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
 
 	// time
 	float currentTime = (float)glfwGetTime();

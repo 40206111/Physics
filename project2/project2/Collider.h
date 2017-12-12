@@ -27,6 +27,11 @@ public:
 	glm::vec3 testCollision(Body* b1, Body* b2);
 	glm::vec3 testCollision(Body* b1, Body* b2, OBB* other);
 	glm::vec3 planeCollision(Body* b1, Body* plane);
+	glm::vec3 getCenter() { return center; }
+	glm::vec3 getx() { return localxyz[0]; }
+	glm::vec3 gety() { return localxyz[1]; }
+	glm::vec3 getz() { return localxyz[2]; }
+	glm::vec3 gethel() { return halfEdgeLength; }
 
 private:
 	glm::vec3 center;
