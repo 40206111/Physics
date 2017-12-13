@@ -151,6 +151,53 @@ bool testAxis(glm::vec3 axis, OBB* obb, OBB* other, float distance, glm::vec3 xy
 	}
 }
 
+glm::vec3 norm(glm::vec3 xyz[], glm::vec3 point, OBB* obb)
+{
+	float minPen = glm::length2(xyz[0] * obb->gethel()[0] - glm::dot(point, xyz[0]));
+	int index = 0;
+	for (int i = 1; i < 3; i++)
+	{
+		float pen = glm::length2(xyz[i] * obb->gethel()[i] - glm::dot(point, xyz[i]));
+		if (pen < minPen)
+		{
+			minPen = pen;
+			index = i;
+		}
+	}
+
+	return xyz[index];
+}
+
+glm::vec3 deep(glm::vec3 normal, glm::vec3 v[])
+{
+	float minDist = 0;
+	bool first = true;
+	glm::vec3 deepPoint;
+	int counter = 0;
+	for (int i = 0; i < 8; i++)
+	{
+		float dist = glm::dot(normal, v[i]);
+		if (first)
+		{
+			minDist = dist;
+			first = false;
+		}
+		if (dist > minDist)
+		{
+			minDist = dist;
+			deepPoint = v[i];
+			counter = 1;
+		}
+		if (dist == minDist)
+		{
+			deepPoint += v[i];
+			counter++;
+		}
+	}
+
+	return deepPoint / counter;
+}
+
 //method for obb colliding with obb
 glm::vec3 OBB::testCollision(Body* b1, Body* b2, OBB* other)
 {
@@ -220,26 +267,136 @@ glm::vec3 OBB::testCollision(Body* b1, Body* b2, OBB* other)
 			v2[i] = glm::vec3(b2->getMesh().getModel() * glm::vec4(other->vertices[i], 1.0f));
 		}
 
-		glm::vec3 point = v1[0];
+		//Declaire average point
+		glm::vec3 ap;
+		float minDist = 0;
+		int counter = 0;
+		bool first = true;
 
-		for (int i = 1; i < 8; i++)
+		for (int i = 0; i < 8; i++)
 		{
+			glm::vec3  d = v2[i] - worldC;
 
+			glm::vec3 point = worldC;
+
+			for (int j = 0; j < 3; j++)
+			{
+				float dist = dot(d, worldxyz[j]);
+				if (dist > this->gethel()[j])
+				{
+					dist = this->gethel()[j];
+				}
+				if (dist < -this->gethel()[j])
+				{
+					dist = -this->gethel()[j];
+				}
+				point += dist * worldxyz[j];
+			}
+			float thisDist = glm::length2(point - v2[i]);
+
+			if (thisDist == minDist)
+			{
+				ap += point;
+				counter++;
+			}
+			else if (thisDist < minDist)
+			{
+				ap = point;
+				minDist = thisDist;
+				counter = 1;
+			}
+			if (first)
+			{
+				ap = point;
+				minDist = thisDist;
+				first = false;
+				counter = 1;
+			}
 		}
 
-		//reposition object with higher y coordinate
-		if (worldC.y > worldCOther.y)
-		{
+		first = true;
 
-			//set position
-			//b1->setPos(b1->getPos() + (normal * (radius - distance)));
+		for (int i = 0; i < 8; i++)
+		{
+			glm::vec3  d = v1[i] - worldCOther;
+
+			glm::vec3 point = worldCOther;
+
+			for (int j = 0; j < 3; j++)
+			{
+				float dist = dot(d, worldxyzOther[j]);
+				if (dist > other->gethel()[j])
+				{
+					dist = other->gethel()[j];
+				}
+				if (dist < -other->gethel()[j])
+				{
+					dist = -other->gethel()[j];
+				}
+
+				point += dist * worldxyzOther[j];
+			}
+			float thisDist = glm::length2(point - v1[i]);
+
+			if (!first && thisDist == minDist)
+			{
+				ap += point;
+				counter++;
+			}
+			else if (!first && thisDist < minDist)
+			{
+				ap = point;
+				minDist = thisDist;
+				counter = 1;
+			}
+			if (first && thisDist <= minDist)
+			{
+				ap = point;
+				minDist = thisDist;
+				first = false;
+				counter = 1;
+			}
+		}
+		ap = ap / counter;
+
+		glm::vec3 deepPoint;
+		if (first)
+		{
+			glm::vec3 normal = norm(worldxyz, ap, this);
+			if (glm::dot(ap - worldC, normal) < 0)
+			{
+				normal *= -1;
+			}
+			this->setNormal(normal);
+			other->setNormal(-normal);
+
+			deepPoint = deep(normal, v2);
+			glm::vec3 deepPoint2 = deep(normal, v1);
+
+			glm::vec3 dpProj = normal * glm::dot(normal, deepPoint);
+			glm::vec3 dpProj2 = normal * glm::dot(normal, deepPoint2);
+
+			b2->setPos(b2->getPos() + (normal * glm::length(dpProj2 - dpProj)));
 		}
 		else
 		{
-			//b2->setPos(b2->getPos() + (normal * (radius - distance)));
-		}
+			glm::vec3 normal = norm(worldxyzOther, ap, other);
+			if (glm::dot(ap - worldCOther, normal) < 0)
+			{
+				normal *= -1;
+			}
+			this->setNormal(-normal);
+			other->setNormal(normal);
 
-		return glm::vec3(point);
+			deepPoint = deep(normal, v1);
+			glm::vec3 deepPoint2 = deep(normal, v2);
+
+			glm::vec3 dpProj = normal * glm::dot(normal, deepPoint);
+			glm::vec3 dpProj2 = normal * glm::dot(normal, deepPoint2);
+
+			b1->setPos(b1->getPos() + (normal * glm::length(dpProj2 - dpProj)));
+		}
+		return deepPoint;
 	}
 	else
 	{

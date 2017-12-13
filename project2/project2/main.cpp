@@ -164,7 +164,7 @@ int main()
 	plane.getMesh().setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
 	plane.scale(glm::vec3(10.0f, 10.0f, 10.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
-	int rbAmount = 4;
+	int rbAmount = 20;
 	std::vector<RigidBody> rb(rbAmount);
 	Application::pauseSimulation = true;
 
@@ -180,27 +180,36 @@ int main()
 	Shader other = Shader("resources/shaders/physics.vert", "resources/shaders/core_blue.frag");
 	Shader other2 = Shader("resources/shaders/physics.vert", "resources/shaders/core_green.frag");
 	
+	std::default_random_engine generate;
 
-
-	for (int i = 0; i < rbAmount/2; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		// rigid body set up
 		rb[i] = RigidBody();
 		rb[i].setMesh(cube);
 		rb[i].getMesh().setShader(rbShader);
 		rb[i].setCollider(new OBB(&rb[i]));
-		rb[i].setMass(0.1f);
-		rb[i].setPos(glm::vec3(-4.0f + 5 * i, -2.5f, 0.0f));
-		//rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
+		rb[i].setMass(1.0f);
+		rb[i].setPos(glm::vec3(-10.0f + 5 * i, -2.5f, -10.0f +5 * i));
 		rb[i].setCor(0.9f);
 		// add forces to Rigid body
-		//rb[i].addForce(&g);
+		rb[i].addForce(&g);
 	}
-	//rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
-	//rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
+	for (int i = 5; i < 10; i++)
+	{
+		// rigid body set up
+		rb[i] = RigidBody();
+		rb[i].setMesh(cube);
+		rb[i].getMesh().setShader(rbShader);
+		rb[i].setCollider(new OBB(&rb[i]));
+		rb[i].setMass(1.0f);
+		rb[i].setPos(glm::vec3(10.0f - 5 * (i-5), -2.5f, -10.0f + 5 * (i-5)));
+		rb[i].setCor(0.9f);
+		// add forces to Rigid body
+		rb[i].addForce(&g);
+	}
 
-
-	for (int i = rbAmount / 2; i < rbAmount; i++)
+	for (int i = 10; i < 15; i++)
 	{
 		// rigid body set up
 		rb[i] = RigidBody();
@@ -208,13 +217,28 @@ int main()
 		rb[i].getMesh().setShader(rbShader);
 		rb[i].setCollider(new Sphere(&rb[i]));
 		rb[i].setMass(1.0f);
-		rb[i].setPos(glm::vec3(-4.0f + 5 * (i-(rbAmount/2)), -2.0f, 5.0f));
-		rb[i].setAngVel(glm::vec3(0.0f, 0.0f, 1.0f));
-		rb[i].setVel(glm::vec3(0.0f, 0.0f, -4.0f));
-		rb[i].setCor(0.9f);
+		rb[i].setPos(glm::vec3(-11.0f + 5 * (i- 10), -2.0f, -12.0f));
+		rb[i].setVel(glm::vec3(0.0f, 0.0f, 10.0f));
+		rb[i].setCor(1.0f);
 		// add forces to Rigid body
 		rb[i].addForce(&g);
 	}
+
+	for (int i = 15; i < 20; i++)
+	{
+		// rigid body set up
+		rb[i] = RigidBody();
+		rb[i].setMesh(sphere);
+		rb[i].getMesh().setShader(rbShader);
+		rb[i].setCollider(new Sphere(&rb[i]));
+		rb[i].setMass(1.0f);
+		rb[i].setPos(glm::vec3(-11.0f + 5 * (i - 15), -2.0f, 12.0f));
+		rb[i].setVel(glm::vec3(0.0f, 0.0f, -10.0f));
+		rb[i].setCor(1.0f);
+		// add forces to Rigid body
+		rb[i].addForce(&g);
+	}
+
 	// time
 	float currentTime = (float)glfwGetTime();
 	float timeAccumulator = 0.0;
