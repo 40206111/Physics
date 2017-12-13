@@ -37,6 +37,7 @@ private:
 	glm::vec3 center;
 	glm::vec3 localxyz[3];
 	glm::vec3 halfEdgeLength;
+	std::vector<glm::vec3> vertices;
 };
 
 class Sphere : public Collider

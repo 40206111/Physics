@@ -164,54 +164,57 @@ int main()
 	plane.getMesh().setShader(Shader("resources/shaders/physics.vert", "resources/shaders/transp.frag"));
 	plane.scale(glm::vec3(10.0f, 10.0f, 10.0f));
 	plane.translate(glm::vec3(0.0f, -3.0f, 0.0f));
-	int rbAmount = 2;
+	int rbAmount = 4;
 	std::vector<RigidBody> rb(rbAmount);
 	Application::pauseSimulation = true;
 
 	// create sphere from obj
-	Mesh m1 = Mesh::Mesh("resources/models/sphere1.obj");
+	Mesh sphere = Mesh::Mesh("resources/models/sphere1.obj");
 
 	// create cube from obj
-	Mesh m2 = Mesh::Mesh("resources/models/cube1.obj");
+	Mesh cube = Mesh::Mesh("resources/models/cube1.obj");
 
-	// load triangle
-	//Mesh m1 = Mesh::Mesh(Mesh::TRIANGLE);
-
-	// load quad
-	//Mesh m1 = Mesh::Mesh(Mesh::QUAD);
-
-	// create cube
-	//Mesh m1 = Mesh::Mesh(Mesh::CUBE);
 	Shader rbShader = Shader("resources/shaders/physics.vert", "resources/shaders/physics.frag");
+
+	//DEBUG SHADERS
 	Shader other = Shader("resources/shaders/physics.vert", "resources/shaders/core_blue.frag");
 	Shader other2 = Shader("resources/shaders/physics.vert", "resources/shaders/core_green.frag");
 	
-	for (int i = 0; i < rbAmount; i++)
+
+
+	for (int i = 0; i < rbAmount/2; i++)
 	{
 		// rigid body set up
 		rb[i] = RigidBody();
-		if (i % 2)
-		{
-			rb[i].setMesh(m2);
-			rb[i].getMesh().setShader(rbShader);
-			rb[i].setCollider(new OBB(&rb[i]));
-		}
-		else
-		{
-			rb[i].setMesh(m1);
-			rb[i].getMesh().setShader(rbShader);
-			rb[i].setCollider(new Sphere(&rb[i]));
-		}
-		rb[i].setMass(1.0f);
-		rb[i].setPos(glm::vec3(-4.0f + 5 * i, 0.0f, 0.0f));
-		rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
-		rb[i].setCor(1.0f);
+		rb[i].setMesh(cube);
+		rb[i].getMesh().setShader(rbShader);
+		rb[i].setCollider(new OBB(&rb[i]));
+		rb[i].setMass(0.1f);
+		rb[i].setPos(glm::vec3(-4.0f + 5 * i, -2.5f, 0.0f));
+		//rb[i].setAngVel(glm::vec3(0.5f, 0.5f, 0.0f));
+		rb[i].setCor(0.9f);
 		// add forces to Rigid body
 		//rb[i].addForce(&g);
 	}
-	rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
-	rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
+	//rb[0].setVel(glm::vec3(3.0f, 0.0f, 0.0f));
+	//rb[1].setVel(glm::vec3(-3.0f, 0.0f, 0.0f));
 
+
+	for (int i = rbAmount / 2; i < rbAmount; i++)
+	{
+		// rigid body set up
+		rb[i] = RigidBody();
+		rb[i].setMesh(sphere);
+		rb[i].getMesh().setShader(rbShader);
+		rb[i].setCollider(new Sphere(&rb[i]));
+		rb[i].setMass(1.0f);
+		rb[i].setPos(glm::vec3(-4.0f + 5 * (i-(rbAmount/2)), -2.0f, 5.0f));
+		rb[i].setAngVel(glm::vec3(0.0f, 0.0f, 1.0f));
+		rb[i].setVel(glm::vec3(0.0f, 0.0f, -4.0f));
+		rb[i].setCor(0.9f);
+		// add forces to Rigid body
+		rb[i].addForce(&g);
+	}
 	// time
 	float currentTime = (float)glfwGetTime();
 	float timeAccumulator = 0.0;
@@ -244,7 +247,6 @@ int main()
 				for (int i = 0; i < rbAmount; i++) {
 					if (!rb[i].paused)
 					{
-						// integration (rotation)
 						integrateRot(rb[i], dt);
 
 						//Integration (position)
@@ -255,7 +257,7 @@ int main()
 							{
 								rb[i].time = t;
 							}
-							else if (t - rb[i].time >= 10)
+							else if (t - rb[i].time >= 20)
 							{
 								rb[i].paused = true;
 							}

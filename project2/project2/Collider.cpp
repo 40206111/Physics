@@ -4,6 +4,7 @@
 
 #include "glm/ext.hpp"
 
+///Virtual methods///
 glm::vec3 Collider::testCollision(Body* b1, Body* b2)
 {
 	return glm::vec3(NULL);
@@ -15,8 +16,10 @@ glm::vec3 Collider::planeCollision(Body* b1, Body* b2)
 }
 
 ///OBB///
+//Constructor
 OBB::OBB(Body* b)
 {
+	//set v to be vector of vertices
 	std::vector<Vertex> v = b->getMesh().getVertices();
 	//declair minimums
 	float minx = v[0].getCoord().x;
@@ -68,34 +71,180 @@ OBB::OBB(Body* b)
 	this->center.y = miny + hy;
 	this->center.z = minz + hz;
 
-	glm::vec3 temp(minx, miny, minz);
+	//set axis
 	this->localxyz[0] = glm::vec3(1.0f, 0.0f, 0.0f);
 	this->localxyz[1] = glm::vec3(0.0f, 1.0f, 0.0f);
 	this->localxyz[2] = glm::vec3(0.0f, 0.0f, 1.0f);
+
+	//set vertices
+	for (int i = -1; i < 2; i += 2)
+	{
+		for (int j = -1; j < 2; j += 2)
+		{
+			for (int k = -1; k < 2; k += 2)
+			{
+				glm::vec3 temp = this->center;
+				temp += this->localxyz[0] * i * hx;
+				temp += this->localxyz[1] * j * hy;
+				temp += this->localxyz[2] * k * hz;
+
+				this->vertices.push_back(temp);
+			}
+		}
+	}
 }
 
+//Main collision method
 glm::vec3 OBB::testCollision(Body* b1, Body* b2)
 {
+	//cast collision object as sphere
 	Sphere* x = dynamic_cast<Sphere*>(b2->getCollider());
+	//cast collision object as OBB
 	OBB* y = dynamic_cast<OBB*>(b2->getCollider());
 
+	//if collided with sphere
 	if (x)
 	{
+		//call sphere collider method
 		return b2->getCollider()->testCollision(b1, b2);
 	}
+	//if collided with obb
 	else if (y)
 	{
+		//call obb collide with obb method
 		return this->testCollision(b1, b2, y);
+	}
+	else
+	{
+		//no collision
+		return glm::vec3(NULL);
+	}
+}
+
+//to test obb against obb on axis
+bool testAxis(glm::vec3 axis, OBB* obb, OBB* other, float distance, glm::vec3 xyz[], glm::vec3 xyz2[])
+{
+	//get first radius on axis
+	float r1 =
+		obb->gethel().x * abs(glm::dot(axis, xyz[0])) +
+		obb->gethel().y * abs(glm::dot(axis, xyz[1])) +
+		obb->gethel().z * abs(glm::dot(axis, xyz[2]));
+	//get second radius on axis
+	float r2 =
+		other->gethel().x * abs(glm::dot(axis, xyz2[0])) +
+		other->gethel().y * abs(glm::dot(axis, xyz2[1])) +
+		other->gethel().z * abs(glm::dot(axis, xyz2[2]));
+
+	// add radi together
+	float radius = r1 + r2;
+
+	//if radius greater than distance
+	if (radius >= distance)
+	{
+		//return true
+		return true;
+	}
+	else
+	{
+		//return false
+		return false;
+	}
+}
+
+//method for obb colliding with obb
+glm::vec3 OBB::testCollision(Body* b1, Body* b2, OBB* other)
+{
+	//set center1 to world space
+	glm::vec3 worldC = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->center, 1.0f));
+	//put local axis into worldspace
+	glm::vec3 worldxyz[3];
+	worldxyz[0] = glm::vec3(b1->getMesh().getRotate() * glm::vec4(this->localxyz[0], 1.0f));
+	worldxyz[1] = glm::vec3(b1->getMesh().getRotate() * glm::vec4(this->localxyz[1], 1.0f));
+	worldxyz[2] = glm::vec3(b1->getMesh().getRotate() * glm::vec4(this->localxyz[2], 1.0f));
+
+	//set center2 to world space
+	glm::vec3 worldCOther = glm::vec3(b2->getMesh().getModel() * glm::vec4(other->center, 1.0f));
+	//put local axis into worldspace
+	glm::vec3 worldxyzOther[3];
+	worldxyzOther[0] = glm::vec3(b2->getMesh().getRotate() * glm::vec4(other->localxyz[0], 1.0f));
+	worldxyzOther[1] = glm::vec3(b2->getMesh().getRotate() * glm::vec4(other->localxyz[1], 1.0f));
+	worldxyzOther[2] = glm::vec3(b2->getMesh().getRotate() * glm::vec4(other->localxyz[2], 1.0f));
+
+	//calculate distance
+	float distance = glm::length(worldCOther - worldC);
+	//initiate index
+	int index = 0;
+	//initiate axis
+	glm::vec3 axis[15];
+
+	//set axis
+	axis[0] = worldxyz[0];
+	axis[1] = worldxyz[1];
+	axis[2] = worldxyz[2];
+	axis[3] = worldxyzOther[0];
+	axis[4] = worldxyzOther[1];
+	axis[5] = worldxyzOther[2];
+	axis[6] = glm::normalize(glm::cross(worldxyz[0], worldxyzOther[0]));
+	axis[7] = glm::normalize(glm::cross(worldxyz[0], worldxyzOther[1]));
+	axis[8] = glm::normalize(glm::cross(worldxyz[0], worldxyzOther[2]));
+	axis[9] = glm::normalize(glm::cross(worldxyz[1], worldxyzOther[0]));
+	axis[10] = glm::normalize(glm::cross(worldxyz[1], worldxyzOther[1]));
+	axis[11] = glm::normalize(glm::cross(worldxyz[1], worldxyzOther[2]));
+	axis[12] = glm::normalize(glm::cross(worldxyz[2], worldxyzOther[0]));
+	axis[13] = glm::normalize(glm::cross(worldxyz[2], worldxyzOther[1]));
+	axis[14] = glm::normalize(glm::cross(worldxyz[2], worldxyzOther[2]));
+	//initialise testbool
+	bool test = true;
+
+	//loop while test collision is true and there are more axis
+	while (test && index < 6)
+	{
+		//if axis isn't 0 test if it collides on axis
+		if (axis[index] != glm::vec3(0.0f))
+			test = testAxis(axis[index], this, other, distance, worldxyz, worldxyzOther);
+		//increase index
+		index++;
+	}
+	
+	//test is still true
+	if (test)
+	{
+		//initialise arrays of world vertices
+		glm::vec3 v1[8];
+		glm::vec3 v2[8];
+
+		//add world space vertices to list
+		for (int i = 0; i < 8; i++)
+		{
+			v1[i] = glm::vec3(b1->getMesh().getModel() * glm::vec4(this->vertices[i], 1.0f));
+			v2[i] = glm::vec3(b2->getMesh().getModel() * glm::vec4(other->vertices[i], 1.0f));
+		}
+
+		glm::vec3 point = v1[0];
+
+		for (int i = 1; i < 8; i++)
+		{
+
+		}
+
+		//reposition object with higher y coordinate
+		if (worldC.y > worldCOther.y)
+		{
+
+			//set position
+			//b1->setPos(b1->getPos() + (normal * (radius - distance)));
+		}
+		else
+		{
+			//b2->setPos(b2->getPos() + (normal * (radius - distance)));
+		}
+
+		return glm::vec3(point);
 	}
 	else
 	{
 		return glm::vec3(NULL);
 	}
-}
-
-glm::vec3 OBB::testCollision(Body* b1, Body* b2, OBB* Collider)
-{
-	return glm::vec3(NULL);
 }
 
 glm::vec3 OBB::planeCollision(Body* b1, Body* plane)
@@ -117,8 +266,7 @@ glm::vec3 OBB::planeCollision(Body* b1, Body* plane)
 	if (abs(distance) <= radius)
 	{
 		b1->setPos(1, plane->getPos().y + radius);
-		//dunno how to find collision point yet
-		return glm::vec3(1.0f);
+		return glm::vec3(worldC - distance * n);
 	}
 	else
 	{
@@ -245,7 +393,6 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2, OBB* other)
 	glm::vec3 worldZ = glm::vec3(b2->getMesh().getRotate() * glm::vec4(other->getz(), 1.0f));
 	glm::vec3 centers = worldCOther - worldC;
 	glm::vec3 n = glm::normalize(centers);
-	//n.y *= -1;
 
 	glm::vec3 projC = n * glm::dot(n, worldC);
 	glm::vec3 projCOther = n * glm::dot(n, worldCOther);
@@ -268,6 +415,8 @@ glm::vec3 Sphere::testCollision(Body* b1, Body* b2, OBB* other)
 		{
 			b2->setPos(b2->getPos() + (n * (radius - distance)));
 		}
+		this->setNormal(-n);
+		other->setNormal(n);
 		return glm::vec3(worldC + (n * this->radius));
 	}
 	else
